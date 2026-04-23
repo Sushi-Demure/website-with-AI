@@ -308,7 +308,16 @@ function VoiceSection({ t }) {
 
     // Retell sends many partial updates; keep one row per speaker turn and update it.
     if (last && last.role === role) {
-      const nextText = msg.length >= last.text.length ? msg : last.text;
+      let nextText = last.text;
+      if (msg.startsWith(last.text)) {
+        // Typical streaming partial becoming complete.
+        nextText = msg;
+      } else if (!last.text.startsWith(msg) && msg !== last.text) {
+        // Different fragment from same speaker in same turn -> merge into one final sentence.
+        const joiner = /[.!?؟]$/.test(last.text) ? ' ' : ' ';
+        nextText = `${last.text}${joiner}${msg}`.trim();
+      }
+
       if (nextText !== last.text) {
         const updated = [...prev];
         updated[updated.length - 1] = { ...last, text: nextText, ts: Date.now() };
@@ -615,8 +624,8 @@ function VoiceSection({ t }) {
                   <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.45)' }}>{t.voice.transcriptEmpty}</div>
                 ) : (
                   voiceTranscript.map((m, i) => (
-                    <div key={`${m.ts}-${i}`} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, lineHeight: 1.5, color: 'rgba(248,244,239,0.75)' }}>
-                      <span style={{ color: m.role === 'you' ? 'var(--pink)' : '#9bc5ff', fontWeight: 600 }}>{m.role === 'you' ? t.voice.transcriptYou : t.voice.transcriptAI}:</span> {m.text}
+                    <div key={`${m.ts}-${i}`} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, lineHeight: 1.5, color: 'rgba(248,244,239,0.82)' }}>
+                      {m.text}
                     </div>
                   ))
                 )}

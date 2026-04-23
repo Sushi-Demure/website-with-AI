@@ -300,11 +300,26 @@ function VoiceSection({ t }) {
   const sdkReadyRef = React.useRef(null);
   const transcriptRef = React.useRef([]);
 
-  const pushTranscript = React.useCallback((role, text) => {
+  const upsertTranscriptTurn = React.useCallback((role, text) => {
     const msg = String(text || '').trim();
     if (!msg) return;
-    const item = { role, text: msg, ts: Date.now() };
-    transcriptRef.current = [...transcriptRef.current.slice(-7), item];
+    const prev = transcriptRef.current;
+    const last = prev[prev.length - 1];
+
+    // Retell sends many partial updates; keep one row per speaker turn and update it.
+    if (last && last.role === role) {
+      const nextText = msg.length >= last.text.length ? msg : last.text;
+      if (nextText !== last.text) {
+        const updated = [...prev];
+        updated[updated.length - 1] = { ...last, text: nextText, ts: Date.now() };
+        transcriptRef.current = updated;
+      } else {
+        transcriptRef.current = prev;
+      }
+    } else {
+      const item = { role, text: msg, ts: Date.now() };
+      transcriptRef.current = [...prev.slice(-7), item];
+    }
     setVoiceTranscript(transcriptRef.current);
   }, []);
 
@@ -473,10 +488,7 @@ function VoiceSection({ t }) {
         const items = parseTranscriptItems(payload, fallbackRole);
         if (!items.length) return;
         items.forEach((it) => {
-          const last = transcriptRef.current[transcriptRef.current.length - 1];
-          // Avoid flooding duplicate partials.
-          if (last && last.role === it.role && last.text === it.text) return;
-          pushTranscript(it.role, it.text);
+          upsertTranscriptTurn(it.role, it.text);
         });
       };
 

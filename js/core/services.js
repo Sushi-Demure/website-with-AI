@@ -178,4 +178,52 @@ async function sendChatMessage(message, history, lang) {
   }
 }
 
-window.SushiServices = { submitReservation, sendChatMessage };
+// ── Complaints Service ─────────────────────────────────────
+
+/** Complaints → n8n (dedicated webhook only — not chat / reservation). */
+async function submitComplaint(payload) {
+  const N8N_COMPLAINT_WEBHOOK_URL =
+    'https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/e296fd84-f0b3-41fa-b822-65ff4f3fa5b9';
+
+  const allowed = new Set(['general', 'food', 'service', 'reservation', 'delivery', 'billing']);
+  let category = String(payload.category || 'general').trim().toLowerCase();
+  if (!allowed.has(category)) category = 'general';
+
+  const body = {
+    name: String(payload.name || '').trim(),
+    phone: String(payload.phone || '').trim(),
+    complaint_text: String(payload.complaint_text || '').trim(),
+    category,
+    source: 'website',
+  };
+
+  try {
+    const res = await fetch(N8N_COMPLAINT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      console.error('Complaint HTTP', res.status, text.slice(0, 300));
+      return { ok: false };
+    }
+    let data = null;
+    try {
+      data = text.trim() ? JSON.parse(text) : null;
+    } catch (parseErr) {
+      console.error('Complaint JSON parse error:', parseErr, text.slice(0, 200));
+      return { ok: false };
+    }
+    if (!data || data.success !== true) {
+      console.error('Complaint unexpected response', text.slice(0, 300));
+      return { ok: false };
+    }
+    return { ok: true, message: typeof data.message === 'string' ? data.message : undefined };
+  } catch (err) {
+    console.error('Complaint error:', err);
+    return { ok: false };
+  }
+}
+
+window.SushiServices = { submitReservation, sendChatMessage, submitComplaint };

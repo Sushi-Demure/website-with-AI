@@ -88,6 +88,7 @@ function App() {
       <ReservationSection t={t} />
       <ChatWidget t={t} />
       <VoiceSection t={t} />
+      <ComplaintSection t={t} />
       <ContactSection t={t} />
       <Footer t={t} lang={lang} setLang={setLang} />
     </div>

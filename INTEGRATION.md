@@ -10,6 +10,7 @@ Use this file when wiring n8n, Retell, or debugging the website vs Slack.
 |------|--------|
 | **n8n — Chat (production webhook)** | `https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/60368766-417f-4f43-8aec-c7828cb84368` |
 | **n8n — Website reservation (production webhook)** | `https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/91c29aa5-e239-431f-b5e0-41270ec950c8` |
+| **n8n — Complaints (production webhook)** | `https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/e296fd84-f0b3-41fa-b822-65ff4f3fa5b9` (`submitComplaint` in `js/core/services.js`; not chat or reservation). |
 | **Retell AI — Public key** | `public_key_3c5ba26e49b46112b6dbb` |
 | **Retell AI — Agent ID** | `agent_714b199204c6cc01cd77ebc37d` |
 
@@ -67,6 +68,26 @@ Current payload in `sendChatMessage`:
 ```
 
 Ensure your chat webhook accepts this shape, or adjust `services.js` to match your workflow.
+
+---
+
+## Complaints JSON (website → n8n)
+
+Posted by `submitComplaint` in `js/core/services.js` to the complaints webhook only.
+
+```json
+{
+  "name": "",
+  "phone": "",
+  "complaint_text": "…",
+  "category": "general",
+  "source": "website"
+}
+```
+
+- **category** (lowercase): `general` | `food` | `service` | `reservation` | `delivery` | `billing`
+- **name** / **phone**: empty string if omitted
+- **source**: always `website`
 
 ---
 

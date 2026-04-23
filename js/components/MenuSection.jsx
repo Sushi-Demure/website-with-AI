@@ -7,6 +7,9 @@ function MenuSection({ t }) {
   const allCats = [t.menu.all, ...t.menu.categories];
   const [active, setActive] = React.useState(t.menu.all);
   const [search, setSearch] = React.useState('');
+  const [page, setPage] = React.useState(1);
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+  const PAGE_SIZE = isMobile ? 6 : 12;
 
   const catEn = window.TRANSLATIONS.en.menu.categories;
   const catAr = window.TRANSLATIONS.ar.menu.categories;
@@ -23,6 +26,25 @@ function MenuSection({ t }) {
     const searchMatch = !search || name.toLowerCase().includes(search.toLowerCase());
     return catMatch && searchMatch;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pagedItems = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [active, search, t.lang]);
+
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  React.useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const tagLabel = (tag) => {
     if (!tag) return null;
@@ -72,8 +94,9 @@ function MenuSection({ t }) {
             {t.lang === 'ar' ? 'لا توجد نتائج' : 'No items found'}
           </div>
         ) : (
+          <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-            {filtered.map(item => {
+            {pagedItems.map(item => {
               const tag = tagLabel(item.tag);
               return (
                 <div key={item.id} style={{ background: 'var(--dark-2)', borderRadius: 18, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', transition: 'all 0.3s', cursor: 'default' }}
@@ -119,6 +142,50 @@ function MenuSection({ t }) {
               );
             })}
           </div>
+          {totalPages > 1 && (
+            <div style={{ marginTop: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  background: currentPage === 1 ? 'rgba(255,255,255,0.04)' : 'rgba(240,184,200,0.12)',
+                  color: currentPage === 1 ? 'rgba(248,244,239,0.35)' : 'var(--pink)',
+                  border: currentPage === 1 ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(240,184,200,0.2)',
+                  padding: '8px 14px',
+                  borderRadius: 22,
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {t.lang === 'ar' ? 'السابق' : 'Previous'}
+              </button>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.6)', letterSpacing: '0.04em' }}>
+                {t.lang === 'ar'
+                  ? `الصفحة ${currentPage} من ${totalPages}`
+                  : `Page ${currentPage} of ${totalPages}`}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{
+                  background: currentPage === totalPages ? 'rgba(255,255,255,0.04)' : 'rgba(240,184,200,0.12)',
+                  color: currentPage === totalPages ? 'rgba(248,244,239,0.35)' : 'var(--pink)',
+                  border: currentPage === totalPages ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(240,184,200,0.2)',
+                  padding: '8px 14px',
+                  borderRadius: 22,
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {t.lang === 'ar' ? 'التالي' : 'Next'}
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </section>

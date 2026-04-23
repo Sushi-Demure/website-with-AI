@@ -3,6 +3,13 @@
 // ============================================================
 
 function HeroSection({ t }) {
+  const [heroIn, setHeroIn] = React.useState(false);
+
+  React.useEffect(() => {
+    const id = setTimeout(() => setHeroIn(true), 120);
+    return () => clearTimeout(id);
+  }, []);
+
   const scrollTo = (href) => {
     const el = document.querySelector(href);
     if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
@@ -12,7 +19,7 @@ function HeroSection({ t }) {
     <section id="home" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', background: 'var(--dark)' }}>
       {/* Hero background image */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <img src="https://picsum.photos/seed/sushihero/1800/1000" alt="" style={{ width:'100%', height:'100%', objectFit:'cover', opacity: 0.18 }} />
+        <img src="https://picsum.photos/seed/sushihero/1800/1000" alt="" style={{ width:'100%', height:'100%', objectFit:'cover', opacity: 0.18, animation:'heroPan 18s ease-in-out infinite alternate', transformOrigin:'center' }} />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, rgba(15,31,23,0.97) 0%, rgba(15,31,23,0.75) 50%, rgba(30,61,42,0.85) 100%)' }}/>
       </div>
 
@@ -27,14 +34,14 @@ function HeroSection({ t }) {
       </div>
 
       {/* Pink glow top-right */}
-      <div style={{ position:'absolute', top:'-10%', right:'-5%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(242,184,198,0.12) 0%, transparent 70%)', zIndex:1, pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', top:'-10%', right:'-5%', width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle, rgba(242,184,198,0.12) 0%, transparent 70%)', zIndex:1, pointerEvents:'none', animation:'heroGlowPulse 9s ease-in-out infinite' }}/>
       {/* Green glow bottom-left */}
-      <div style={{ position:'absolute', bottom:'-10%', left:'-5%', width:600, height:600, borderRadius:'50%', background:'radial-gradient(circle, rgba(30,61,42,0.5) 0%, transparent 70%)', zIndex:1, pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', bottom:'-10%', left:'-5%', width:600, height:600, borderRadius:'50%', background:'radial-gradient(circle, rgba(30,61,42,0.5) 0%, transparent 70%)', zIndex:1, pointerEvents:'none', animation:'heroGlowPulse 11s ease-in-out infinite reverse' }}/>
 
       <div style={{ maxWidth:1280, margin:'0 auto', padding:'0 clamp(1.5rem,5vw,4rem)', width:'100%', paddingTop:140, paddingBottom:100, position:'relative', zIndex:2 }}>
         <div style={{ maxWidth:800 }}>
           {/* Eyebrow */}
-          <div style={{ display:'inline-flex', alignItems:'center', gap:12, marginBottom:32, background:'rgba(242,184,198,0.08)', border:'1px solid rgba(242,184,198,0.2)', borderRadius:32, padding:'6px 18px' }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:12, marginBottom:32, background:'rgba(242,184,198,0.08)', border:'1px solid rgba(242,184,198,0.2)', borderRadius:32, padding:'6px 18px', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(18px)', transition:'all 700ms cubic-bezier(0.22,1,0.36,1)' }}>
             <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--pink)', display:'inline-block' }}/>
             <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:12, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--pink)', fontWeight:500 }}>
               {t.lang === 'ar' ? 'سوشي ديميور — الرياض · جدة · المدينة' : 'Sushi Demure — Riyadh · Jeddah · Medina'}
@@ -43,16 +50,16 @@ function HeroSection({ t }) {
 
           {/* Headline */}
           <h1 style={{ fontFamily:'Playfair Display,serif', fontSize:'clamp(3.2rem,7.5vw,6.5rem)', fontWeight:700, color:'var(--cream)', lineHeight:1.05, margin:'0 0 28px', textWrap:'pretty' }}>
-            <span style={{ display:'block' }}>{t.hero.tagline}</span>
-            <span style={{ display:'block', color:'var(--pink)', fontStyle:'italic' }}>{t.hero.tagline2}</span>
+            <span style={{ display:'block', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(26px)', transition:'all 860ms cubic-bezier(0.22,1,0.36,1) 80ms' }}>{t.hero.tagline}</span>
+            <span style={{ display:'block', color:'var(--pink)', fontStyle:'italic', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(26px)', transition:'all 860ms cubic-bezier(0.22,1,0.36,1) 180ms' }}>{t.hero.tagline2}</span>
           </h1>
 
-          <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:'clamp(1rem,1.8vw,1.2rem)', color:'rgba(248,242,234,0.65)', maxWidth:540, lineHeight:1.8, marginBottom:52 }}>
+          <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:'clamp(1rem,1.8vw,1.2rem)', color:'rgba(248,242,234,0.65)', maxWidth:540, lineHeight:1.8, marginBottom:52, opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(22px)', transition:'all 760ms cubic-bezier(0.22,1,0.36,1) 260ms' }}>
             {t.hero.sub}
           </p>
 
           {/* CTAs */}
-          <div style={{ display:'flex', flexWrap:'wrap', gap:14 }}>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:14, opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(22px)', transition:'all 760ms cubic-bezier(0.22,1,0.36,1) 340ms' }}>
             <button onClick={() => scrollTo('#reservation')}
               style={{ background:'var(--pink)', color:'#0f1f17', padding:'15px 36px', borderRadius:40, border:'none', fontFamily:'DM Sans,sans-serif', fontSize:15, fontWeight:700, cursor:'pointer', letterSpacing:'0.04em', transition:'all 0.25s', boxShadow:'0 8px 40px rgba(242,184,198,0.3)' }}
               onMouseEnter={e => { e.target.style.transform='translateY(-3px)'; e.target.style.boxShadow='0 14px 48px rgba(242,184,198,0.4)'; }}
@@ -74,7 +81,7 @@ function HeroSection({ t }) {
           </div>
 
           {/* Scroll hint */}
-          <div style={{ marginTop:80, display:'flex', alignItems:'center', gap:14, opacity:0.35 }}>
+          <div style={{ marginTop:80, display:'flex', alignItems:'center', gap:14, opacity: heroIn ? 0.35 : 0, transform: heroIn ? 'none' : 'translateY(18px)', transition:'all 760ms cubic-bezier(0.22,1,0.36,1) 460ms' }}>
             <div style={{ width:1, height:52, background:'linear-gradient(to bottom, var(--pink), transparent)' }}/>
             <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--cream)' }}>{t.hero.scroll}</span>
           </div>

@@ -78,7 +78,7 @@ function Navbar({ t, lang, setLang, activeSection }) {
         </div>
 
         {/* Mobile hamburger */}
-        <div style={{ display: 'none' }} className="mobile-nav">
+        <div style={{ display: 'none' }} className="mobile-nav-toggle">
           <button onClick={() => setMenuOpen(!menuOpen)}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
             {[0,1,2].map(i => (
@@ -92,20 +92,20 @@ function Navbar({ t, lang, setLang, activeSection }) {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div style={{ background: 'rgba(14,28,20,0.98)', backdropFilter: 'blur(12px)', padding: '1.5rem clamp(1rem,4vw,3rem) 2rem', borderTop: '1px solid rgba(255,255,255,0.08)' }} className="mobile-nav">
+        <div style={{ background: 'rgba(14,28,20,0.98)', backdropFilter: 'blur(12px)', padding: '1.5rem clamp(1rem,4vw,3rem) 2rem', borderTop: '1px solid rgba(255,255,255,0.08)' }} className="mobile-nav-panel">
           {navLinks.map(l => (
             <a key={l.key} href={l.href} onClick={e => { e.preventDefault(); scrollTo(l.href); }}
               style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 18, color: '#f8f4ef', textDecoration: 'none', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {t.nav[l.key]}
             </a>
           ))}
-          <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 20, alignItems: 'stretch' }}>
             <button onClick={() => { setLang(lang === 'en' ? 'ar' : 'en'); setMenuOpen(false); }}
-              style={{ flex: 1, background: 'transparent', border: '1px solid var(--pink)', color: 'var(--pink)', padding: '10px', borderRadius: 24, fontFamily: 'DM Sans, sans-serif', fontSize: 14, cursor: 'pointer' }}>
+              style={{ width: '100%', minHeight: 50, background: 'transparent', border: '1px solid var(--pink)', color: 'var(--pink)', padding: '10px 14px', borderRadius: 24, fontFamily: 'DM Sans, sans-serif', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
               {t.nav.langLabel}
             </button>
             <a href="#reservation" onClick={e => { e.preventDefault(); scrollTo('#reservation'); }}
-              style={{ flex: 2, background: 'var(--pink)', color: 'var(--dark)', padding: '10px', borderRadius: 24, fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>
+              style={{ width: '100%', minHeight: 50, background: 'var(--pink)', color: 'var(--dark)', padding: '10px 14px', borderRadius: 24, fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}>
               {t.nav.bookNow}
             </a>
           </div>

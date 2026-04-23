@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
@@ -32,13 +33,32 @@
     @keyframes ripple { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
     @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
     @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
-    @media (max-width: 768px) { .desktop-nav { display: none !important; } .mobile-nav { display: flex !important; } }
-    @media (min-width: 769px) { .mobile-nav { display: none !important; } }
+    @keyframes heroPan {
+      0% { transform: scale(1.02) translate3d(-1%, 0, 0); }
+      50% { transform: scale(1.05) translate3d(1.2%, -0.8%, 0); }
+      100% { transform: scale(1.03) translate3d(0.5%, 0.8%, 0); }
+    }
+    @keyframes heroGlowPulse {
+      0% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.95; transform: scale(1.08); }
+      100% { opacity: 0.65; transform: scale(1.02); }
+    }
+    @media (max-width: 768px) {
+      .desktop-nav { display: none !important; }
+      .mobile-nav-toggle { display: flex !important; }
+      .mobile-nav-panel { display: block !important; }
+    }
+    @media (min-width: 769px) {
+      .mobile-nav-toggle { display: none !important; }
+      .mobile-nav-panel { display: none !important; }
+    }
     ::placeholder { color: rgba(248,242,234,0.3); }
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
-    .sd-anim { opacity:0; transform:translateY(24px); transition:opacity 0.65s ease,transform 0.65s ease; }
-    .sd-anim.visible { opacity:1; transform:none; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      [data-aos] { transition: none !important; animation: none !important; transform: none !important; opacity: 1 !important; }
+    }
     /* Glass card utility */
     .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08); }
     /* Pink glow on hover */
@@ -48,6 +68,8 @@
     .tweak-label { font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(248,242,234,0.45); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:8px; display:block; }
     .tweak-row { margin-bottom:18px; }
     .tweak-row:last-child { margin-bottom:0; }
+    .aos-fallback { opacity: 0; transform: translateY(26px); transition: opacity 700ms ease, transform 700ms ease; }
+    .aos-fallback.aos-visible { opacity: 1; transform: none; }
   </style>
 </head>
 <body>
@@ -56,6 +78,7 @@
   <script src="js/core/translations.js"></script>
   <script src="js/core/services.js"></script>
   <script src="js/core/data.js"></script>
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
   <script type="module">
     import { RetellWebClient } from 'https://esm.sh/retell-client-js-sdk@2.0.7';
     window.RetellWebClient = RetellWebClient;
@@ -71,12 +94,67 @@
 
   <script>
     window.addEventListener('load', () => {
-      const obs = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-      }, { threshold: 0.08 });
-      setTimeout(() => {
-        document.querySelectorAll('section').forEach(s => { s.classList.add('sd-anim'); obs.observe(s); });
-      }, 600);
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) return;
+
+      const initFallback = (sections) => {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('aos-visible');
+          });
+        }, { threshold: 0.08 });
+        sections.forEach((section) => {
+          section.classList.add('aos-fallback');
+          io.observe(section);
+          section.querySelectorAll('[data-aos]').forEach((el) => {
+            el.classList.add('aos-fallback');
+            io.observe(el);
+          });
+        });
+      };
+
+      const attachAndInit = () => {
+        const sections = Array.from(document.querySelectorAll('section'));
+        if (!sections.length) return false;
+
+        sections.forEach((section, sIdx) => {
+          section.setAttribute('data-aos', 'fade-up');
+          section.setAttribute('data-aos-duration', '700');
+          section.setAttribute('data-aos-easing', 'ease-out-cubic');
+          section.setAttribute('data-aos-once', 'true');
+
+          const targets = Array.from(section.querySelectorAll('h1, h2, h3, p, button, a, input, textarea, select')).slice(0, 14);
+          targets.forEach((el, idx) => {
+            el.setAttribute('data-aos', 'fade-up');
+            el.setAttribute('data-aos-duration', '560');
+            el.setAttribute('data-aos-delay', String(Math.min((sIdx * 40) + (idx * 55), 720)));
+            el.setAttribute('data-aos-easing', 'ease-out-cubic');
+            el.setAttribute('data-aos-once', 'true');
+          });
+        });
+
+        if (window.AOS) {
+          AOS.init({
+            once: true,
+            duration: 700,
+            easing: 'ease-out-cubic',
+            offset: 90,
+            mirror: false,
+          });
+          AOS.refreshHard();
+        } else {
+          initFallback(sections);
+        }
+        return true;
+      };
+
+      let tries = 0;
+      const timer = setInterval(() => {
+        tries += 1;
+        const done = attachAndInit();
+        if (done || tries > 20) clearInterval(timer);
+      }, 150);
     });
   </script>
 

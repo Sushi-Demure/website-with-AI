@@ -18,6 +18,7 @@ function Navbar({ t, lang, setLang, activeSection }) {
     { key: 'reserve', href: '#reservation' },
     { key: 'ai', href: '#chat' },
     { key: 'aiCall', href: '#voice' },
+    { key: 'complaint', href: '#complaint' },
     { key: 'contact', href: '#contact' },
   ];
 

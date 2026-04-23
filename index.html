@@ -100,8 +100,11 @@
       const initFallback = (sections) => {
         const io = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('aos-visible');
+            if (entry.isIntersecting) {
+              entry.target.classList.add('aos-visible');
+            } else {
+              entry.target.classList.remove('aos-visible');
+            }
           });
         }, { threshold: 0.08 });
         sections.forEach((section) => {
@@ -122,7 +125,7 @@
           section.setAttribute('data-aos', 'fade-up');
           section.setAttribute('data-aos-duration', '700');
           section.setAttribute('data-aos-easing', 'ease-out-cubic');
-          section.setAttribute('data-aos-once', 'true');
+          section.setAttribute('data-aos-once', 'false');
 
           const targets = Array.from(section.querySelectorAll('h1, h2, h3, p, button, a, input, textarea, select')).slice(0, 14);
           targets.forEach((el, idx) => {
@@ -130,17 +133,17 @@
             el.setAttribute('data-aos-duration', '560');
             el.setAttribute('data-aos-delay', String(Math.min((sIdx * 40) + (idx * 55), 720)));
             el.setAttribute('data-aos-easing', 'ease-out-cubic');
-            el.setAttribute('data-aos-once', 'true');
+            el.setAttribute('data-aos-once', 'false');
           });
         });
 
         if (window.AOS) {
           AOS.init({
-            once: true,
+            once: false,
             duration: 700,
             easing: 'ease-out-cubic',
             offset: 90,
-            mirror: false,
+            mirror: true,
           });
           AOS.refreshHard();
         } else {

@@ -105,7 +105,17 @@ function MenuSection({ t }) {
                   {/* Image */}
                   <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, var(--green) 0%, var(--dark) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                     {item.img
-                      ? <img src={item.img} alt={t.lang==='ar'?item.nameAr:item.nameEn} style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }} loading="lazy" />
+                      ? <img
+                          src={item.img}
+                          alt={t.lang==='ar'?item.nameAr:item.nameEn}
+                          style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'img/logo.jpg';
+                          }}
+                        />
                       : <div style={{ textAlign: 'center', opacity: 0.25 }}><div style={{ fontSize: 28, marginBottom: 4 }}>🍣</div><span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--cream)' }}>dish photo</span></div>
                     }
                     {tag && (

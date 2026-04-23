@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sushi Demure | سوشي ديميور</title>
+  <link rel="icon" type="image/jpeg" href="img/logo.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --dark:   #0f1f17;
+      --dark-2: #162b1e;
+      --green:  #1e3d2a;
+      --pink:   #f2b8c6;
+      --cream:  #f8f2ea;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--dark); color: var(--cream); font-family: 'DM Sans','Noto Sans Arabic',sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    [dir="rtl"] * { font-family: 'Noto Sans Arabic','DM Sans',sans-serif; }
+    [dir="rtl"] h1,[dir="rtl"] h2,[dir="rtl"] h3 { font-family: 'Noto Sans Arabic','Playfair Display',serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--dark); }
+    ::-webkit-scrollbar-thumb { background: rgba(242,184,198,0.3); border-radius: 3px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+    @keyframes ripple { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+    @media (max-width: 768px) { .desktop-nav { display: none !important; } .mobile-nav { display: flex !important; } }
+    @media (min-width: 769px) { .mobile-nav { display: none !important; } }
+    ::placeholder { color: rgba(248,242,234,0.3); }
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+    .sd-anim { opacity:0; transform:translateY(24px); transition:opacity 0.65s ease,transform 0.65s ease; }
+    .sd-anim.visible { opacity:1; transform:none; }
+    /* Glass card utility */
+    .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08); }
+    /* Pink glow on hover */
+    .hover-glow:hover { box-shadow:0 0 0 1px var(--pink), 0 8px 32px rgba(242,184,198,0.2) !important; }
+    #tweaks-panel { display:none; position:fixed; bottom:90px; left:24px; z-index:9999; background:var(--dark-2); border:1px solid rgba(255,255,255,0.12); border-radius:18px; padding:20px; width:260px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+    #tweaks-panel.open { display:block; animation:slideDown 0.25s ease; }
+    .tweak-label { font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(248,242,234,0.45); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:8px; display:block; }
+    .tweak-row { margin-bottom:18px; }
+    .tweak-row:last-child { margin-bottom:0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="js/core/translations.js"></script>
+  <script src="js/core/services.js"></script>
+  <script src="js/core/data.js"></script>
+
+  <script type="text/babel" src="js/components/Navbar.jsx"></script>
+  <script type="text/babel" src="js/components/HeroAbout.jsx"></script>
+  <script type="text/babel" src="js/components/MenuSection.jsx"></script>
+  <script type="text/babel" src="js/components/ReservationSection.jsx"></script>
+  <script type="text/babel" src="js/components/ChatVoice.jsx"></script>
+  <script type="text/babel" src="js/components/ContactFooter.jsx"></script>
+  <script type="text/babel" src="js/App.jsx"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.08 });
+      setTimeout(() => {
+        document.querySelectorAll('section').forEach(s => { s.classList.add('sd-anim'); obs.observe(s); });
+      }, 600);
+    });
+  </script>
+
+  <div id="tweaks-panel">
+    <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--cream);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+      Tweaks <span style="font-size:11px;color:rgba(248,244,239,0.4);font-weight:400;">Sushi Demure</span>
+    </div>
+    <div class="tweak-row">
+      <span class="tweak-label">Accent Color</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="setAccent('oklch(0.82 0.08 355)')" title="Blush Pink" style="width:28px;height:28px;border-radius:50%;background:oklch(0.82 0.08 355);border:2px solid rgba(255,255,255,0.3);cursor:pointer;"></button>
+        <button onclick="setAccent('oklch(0.82 0.09 210)')" title="Sky Blue" style="width:28px;height:28px;border-radius:50%;background:oklch(0.82 0.09 210);border:2px solid transparent;cursor:pointer;"></button>
+        <button onclick="setAccent('oklch(0.80 0.09 80)')"  title="Warm Gold" style="width:28px;height:28px;border-radius:50%;background:oklch(0.80 0.09 80);border:2px solid transparent;cursor:pointer;"></button>
+        <button onclick="setAccent('oklch(0.78 0.09 140)')" title="Sage" style="width:28px;height:28px;border-radius:50%;background:oklch(0.78 0.09 140);border:2px solid transparent;cursor:pointer;"></button>
+      </div>
+    </div>
+    <div class="tweak-row">
+      <span class="tweak-label">Base Theme</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="setTheme('dark')"   style="font-family:'DM Sans',sans-serif;font-size:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:var(--cream);padding:5px 12px;border-radius:20px;cursor:pointer;">Dark</button>
+        <button onclick="setTheme('forest')" style="font-family:'DM Sans',sans-serif;font-size:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:var(--cream);padding:5px 12px;border-radius:20px;cursor:pointer;">Forest</button>
+        <button onclick="setTheme('night')"  style="font-family:'DM Sans',sans-serif;font-size:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:var(--cream);padding:5px 12px;border-radius:20px;cursor:pointer;">Night</button>
+      </div>
+    </div>
+    <div class="tweak-row">
+      <span class="tweak-label">Font Scale</span>
+      <input type="range" min="85" max="115" value="100" oninput="document.documentElement.style.fontSize=this.value+'%'" style="width:100%;accent-color:var(--pink);" />
+    </div>
+  </div>
+
+  <script>
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accentColor": "#f2b8c6",
+      "theme": "dark",
+      "fontScale": 100
+    }/*EDITMODE-END*/;
+    function setAccent(c) {
+      document.documentElement.style.setProperty('--pink', c);
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { accentColor: c } }, '*');
+    }
+    function setTheme(t) {
+      const themes = {
+        dark:   { '--dark':'#0f1f17', '--dark-2':'#162b1e', '--green':'#1e3d2a' },
+        forest: { '--dark':'#0d1e12', '--dark-2':'#142618', '--green':'#1a3322' },
+        night:  { '--dark':'#0e1520', '--dark-2':'#131d2a', '--green':'#162535' },
+      };
+      Object.entries(themes[t]||{}).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { theme: t } }, '*');
+    }
+    setAccent(TWEAK_DEFAULTS.accentColor);
+    setTheme(TWEAK_DEFAULTS.theme);
+    document.documentElement.style.fontSize = TWEAK_DEFAULTS.fontScale + '%';
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode')   document.getElementById('tweaks-panel').classList.add('open');
+      if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel').classList.remove('open');
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  </script>
+</body>
+</html>

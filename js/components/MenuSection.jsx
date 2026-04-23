@@ -4,8 +4,8 @@
 
 function MenuSection({ t }) {
   const data = window.MENU_DATA || [];
-  const allCats = [t.menu.all, ...t.menu.categories];
-  const [active, setActive] = React.useState(t.menu.all);
+  const ALL_CAT_KEY = '__all__';
+  const [activeKey, setActiveKey] = React.useState(ALL_CAT_KEY);
   const [search, setSearch] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
@@ -13,15 +13,16 @@ function MenuSection({ t }) {
 
   const catEn = window.TRANSLATIONS.en.menu.categories;
   const catAr = window.TRANSLATIONS.ar.menu.categories;
-
-  const getEnCat = (displayCat) => {
-    if (displayCat === t.menu.all) return null;
-    const idx = t.lang === 'ar' ? catAr.indexOf(displayCat) : catEn.indexOf(displayCat);
-    return idx >= 0 ? catEn[idx] : displayCat;
-  };
+  const categoryOptions = React.useMemo(() => ([
+    { key: ALL_CAT_KEY, label: t.menu.all },
+    ...catEn.map((enCat, idx) => ({
+      key: enCat,
+      label: t.lang === 'ar' ? (catAr[idx] || enCat) : enCat,
+    })),
+  ]), [t.menu.all, t.lang, catEn, catAr]);
 
   const filtered = data.filter(item => {
-    const catMatch = active === t.menu.all || item.category === getEnCat(active);
+    const catMatch = activeKey === ALL_CAT_KEY || item.category === activeKey;
     const name = t.lang === 'ar' ? item.nameAr : item.nameEn;
     const searchMatch = !search || name.toLowerCase().includes(search.toLowerCase());
     return catMatch && searchMatch;
@@ -34,7 +35,7 @@ function MenuSection({ t }) {
 
   React.useEffect(() => {
     setPage(1);
-  }, [active, search, t.lang]);
+  }, [activeKey, search, t.lang]);
 
   React.useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -79,10 +80,10 @@ function MenuSection({ t }) {
         {/* Category tabs — scrollable */}
         <div style={{ overflowX: 'auto', paddingBottom: 8, marginBottom: 40, scrollbarWidth: 'none' }}>
           <div style={{ display: 'flex', gap: 8, width: 'max-content' }}>
-            {allCats.map(cat => (
-              <button key={cat} onClick={() => setActive(cat)}
-                style={{ padding: '8px 18px', borderRadius: 24, border: active === cat ? 'none' : '1px solid rgba(255,255,255,0.12)', background: active === cat ? 'var(--pink)' : 'transparent', color: active === cat ? 'var(--dark)' : 'rgba(248,244,239,0.6)', fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: active === cat ? 600 : 400, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s', letterSpacing: '0.02em' }}>
-                {cat}
+            {categoryOptions.map(cat => (
+              <button key={cat.key} onClick={() => setActiveKey(cat.key)}
+                style={{ padding: '8px 18px', borderRadius: 24, border: activeKey === cat.key ? 'none' : '1px solid rgba(255,255,255,0.12)', background: activeKey === cat.key ? 'var(--pink)' : 'transparent', color: activeKey === cat.key ? 'var(--dark)' : 'rgba(248,244,239,0.6)', fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: activeKey === cat.key ? 600 : 400, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s', letterSpacing: '0.02em' }}>
+                {cat.label}
               </button>
             ))}
           </div>

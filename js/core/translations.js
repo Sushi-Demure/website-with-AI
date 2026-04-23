@@ -183,6 +183,11 @@ window.TRANSLATIONS = {
       active: 'Speaking...',
       ended: 'Session ended. Tap to restart.',
       cta: 'Start Voice Session',
+      endCta: 'End Voice Session',
+      transcriptTitle: 'Live transcript',
+      transcriptYou: 'You',
+      transcriptAI: 'AI',
+      transcriptEmpty: 'Transcript will appear during the call.',
       embed: '[ Retell AI embed goes here ]',
     },
     // Contact
@@ -378,6 +383,11 @@ window.TRANSLATIONS = {
       active: 'يتحدث...',
       ended: 'انتهت الجلسة. اضغط لإعادة التشغيل.',
       cta: 'بدء الجلسة الصوتية',
+      endCta: 'إنهاء الجلسة الصوتية',
+      transcriptTitle: 'النص المباشر',
+      transcriptYou: 'أنت',
+      transcriptAI: 'المساعد',
+      transcriptEmpty: 'سيظهر النص أثناء المكالمة.',
       embed: '[ يتم وضع Retell AI هنا ]',
     },
     contact: {

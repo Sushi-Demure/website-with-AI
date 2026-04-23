@@ -3,21 +3,22 @@
 // ============================================================
 
 function App() {
+  const ARAB_COUNTRY_CODES = new Set([
+    'SA', 'AE', 'QA', 'KW', 'BH', 'OM', 'YE', 'IQ', 'JO', 'LB', 'SY',
+    'PS', 'EG', 'SD', 'LY', 'TN', 'DZ', 'MA', 'MR', 'SO', 'DJ', 'KM',
+  ]);
+
   const detectDefaultLang = () => {
     try {
       const locales = (navigator.languages && navigator.languages.length)
         ? navigator.languages
         : [navigator.language || 'en'];
-      const arabCountryCodes = new Set([
-        'SA', 'AE', 'QA', 'KW', 'BH', 'OM', 'YE', 'IQ', 'JO', 'LB', 'SY',
-        'PS', 'EG', 'SD', 'LY', 'TN', 'DZ', 'MA', 'MR', 'SO', 'DJ', 'KM',
-      ]);
       for (const locale of locales) {
         const raw = String(locale || '').trim();
         if (!raw) continue;
         if (/^ar([_-]|$)/i.test(raw)) return 'ar';
         const m = raw.match(/[-_]([A-Za-z]{2})$/);
-        if (m && arabCountryCodes.has(m[1].toUpperCase())) return 'ar';
+        if (m && ARAB_COUNTRY_CODES.has(m[1].toUpperCase())) return 'ar';
       }
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
       if (/^Asia\/(Riyadh|Dubai|Qatar|Kuwait|Bahrain|Muscat|Aden|Baghdad|Amman|Beirut|Damascus)$/.test(tz)) {
@@ -34,6 +35,33 @@ function App() {
 
   const saved = localStorage.getItem('sd_lang');
   const [lang, setLangState] = React.useState(saved || detectDefaultLang());
+
+  // If no saved preference, refine language by visitor country (IP-based).
+  React.useEffect(() => {
+    if (saved) return undefined;
+    let cancelled = false;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+
+    fetch('https://ipapi.co/json/', { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        const code = String(data.country_code || '').toUpperCase();
+        if (ARAB_COUNTRY_CODES.has(code)) setLangState('ar');
+        else setLangState('en');
+      })
+      .catch(() => {
+        // Keep locale/timezone-based fallback.
+      })
+      .finally(() => clearTimeout(timer));
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [saved]);
 
   const setLang = (l) => {
     setLangState(l);

@@ -294,9 +294,19 @@ const RETELL_PUBLIC_KEY = 'public_key_3c5ba26e49b46112b6dbb';
 function VoiceSection({ t }) {
   const [voiceState, setVoiceState] = React.useState('idle');
   const [voiceNote, setVoiceNote] = React.useState('');
+  const [voiceTranscript, setVoiceTranscript] = React.useState([]);
   const retellRef = React.useRef(null);
   const isStartingRef = React.useRef(false);
   const sdkReadyRef = React.useRef(null);
+  const transcriptRef = React.useRef([]);
+
+  const pushTranscript = React.useCallback((role, text) => {
+    const msg = String(text || '').trim();
+    if (!msg) return;
+    const item = { role, text: msg, ts: Date.now() };
+    transcriptRef.current = [...transcriptRef.current.slice(-7), item];
+    setVoiceTranscript(transcriptRef.current);
+  }, []);
 
   const teardownCall = React.useCallback((nextState = 'ended', note = '') => {
     try {
@@ -306,6 +316,8 @@ function VoiceSection({ t }) {
     } finally {
       retellRef.current = null;
       isStartingRef.current = false;
+      transcriptRef.current = [];
+      setVoiceTranscript([]);
       setVoiceState(nextState);
       setVoiceNote(note);
     }
@@ -371,17 +383,29 @@ function VoiceSection({ t }) {
         },
         body: JSON.stringify({ agent_id: RETELL_AGENT_ID }),
       });
-      if (!resp.ok) throw new Error(`Retell token request failed (${resp.status})`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => null);
+      if (!resp.ok) {
+        const apiMsg = data && typeof data.message === 'string' ? data.message : '';
+        throw new Error(apiMsg ? `Retell token request failed (${resp.status}): ${apiMsg}` : `Retell token request failed (${resp.status})`);
+      }
       const accessToken = data && (data.access_token || data.accessToken);
       if (!accessToken) throw new Error('Missing Retell access token');
       await ensureMicPermission();
 
       const client = new RetellWebClientCtor();
       retellRef.current = client;
+      transcriptRef.current = [];
+      setVoiceTranscript([]);
       client.on('call_started',  () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_stop_talking',  () => { setVoiceState('listening'); setVoiceNote(''); });
+      client.on('update', (update) => {
+        const u = update || {};
+        const roleRaw = String(u.role || u.speaker || u.source || '').toLowerCase();
+        const role = /agent|assistant|ai/.test(roleRaw) ? 'ai' : (/user|human|caller|customer/.test(roleRaw) ? 'you' : null);
+        const text = u.transcript || u.text || u.message || '';
+        if (role && text) pushTranscript(role, text);
+      });
       client.on('call_ended',    () => {
         retellRef.current = null;
         isStartingRef.current = false;
@@ -404,6 +428,7 @@ function VoiceSection({ t }) {
       const micDenied = /denied|NotAllowedError|Permission/i.test(msg);
       const micUnavailable = /Microphone API unavailable|secure context|insecure|getUserMedia/i.test(msg);
       const sdkIssue = /Retell SDK|load/i.test(msg);
+      const domainNotAllowed = /public key is not allowed for this domain/i.test(msg);
       isStartingRef.current = false;
       retellRef.current = null;
       setVoiceState('ended');
@@ -412,6 +437,8 @@ function VoiceSection({ t }) {
           ? (t.lang === 'ar' ? 'تم رفض إذن الميكروفون.' : 'Microphone permission was denied.')
           : micUnavailable
             ? (t.lang === 'ar' ? 'الميكروفون يحتاج HTTPS أو localhost.' : 'Microphone requires HTTPS or localhost.')
+            : domainNotAllowed
+              ? (t.lang === 'ar' ? 'مفتاح Retell غير مسموح لهذا الدومين.' : 'Retell public key is not allowed for this domain.')
             : sdkIssue
               ? (t.lang === 'ar' ? 'تعذّر تحميل خدمة الصوت.' : 'Unable to load voice service.')
           : (t.lang === 'ar' ? 'تعذّر بدء الجلسة الصوتية.' : 'Unable to start voice session.')
@@ -433,6 +460,7 @@ function VoiceSection({ t }) {
 
   const cfg = stateConfig[voiceState];
   const voiceStatusLabel = voiceNote || cfg.label;
+  const isCallLive = voiceState === 'connecting' || voiceState === 'listening' || voiceState === 'active';
 
   return (
     <section id="voice" style={{ background: 'var(--green)', padding: 'clamp(4rem,8vw,7rem) clamp(1.5rem,5vw,4rem)' }}>
@@ -491,11 +519,26 @@ function VoiceSection({ t }) {
               </span>
             </div>
 
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '12px 14px', marginBottom: 24, textAlign: t.dir === 'rtl' ? 'right' : 'left' }}>
+              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(248,244,239,0.45)', marginBottom: 10 }}>{t.voice.transcriptTitle}</div>
+              <div style={{ maxHeight: 112, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {voiceTranscript.length === 0 ? (
+                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.45)' }}>{t.voice.transcriptEmpty}</div>
+                ) : (
+                  voiceTranscript.map((m, i) => (
+                    <div key={`${m.ts}-${i}`} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, lineHeight: 1.5, color: 'rgba(248,244,239,0.75)' }}>
+                      <span style={{ color: m.role === 'you' ? 'var(--pink)' : '#9bc5ff', fontWeight: 600 }}>{m.role === 'you' ? t.voice.transcriptYou : t.voice.transcriptAI}:</span> {m.text}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
             <button onClick={voiceState === 'idle' || voiceState === 'ended' ? startCall : endCall}
               style={{ background: 'var(--pink)', color: 'var(--dark)', padding: '12px 28px', borderRadius: 28, border: 'none', fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 0.25s', letterSpacing: '0.04em' }}
               onMouseEnter={e => e.target.style.background = '#f5c8d5'}
               onMouseLeave={e => e.target.style.background = 'var(--pink)'}>
-              {t.voice.cta}
+              {isCallLive ? t.voice.endCta : t.voice.cta}
             </button>
           </div>
         </div>

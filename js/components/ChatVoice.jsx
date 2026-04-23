@@ -306,24 +306,47 @@ function VoiceSection({ t }) {
     stream.getTracks().forEach((track) => track.stop());
   }, []);
 
-  // Load Retell SDK once
-  React.useEffect(() => {
-    if (window.RetellWebClient) {
-      sdkReadyRef.current = Promise.resolve(true);
-      return undefined;
-    }
+  const ensureRetellSdk = React.useCallback(async () => {
+    if (window.RetellWebClient) return;
     if (!sdkReadyRef.current) {
       sdkReadyRef.current = new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://unpkg.com/retell-client-js-sdk@latest/dist/index.umd.js';
-        s.async = true;
-        s.onload = () => resolve(true);
-        s.onerror = () => reject(new Error('Failed to load Retell SDK'));
-        document.head.appendChild(s);
+        const sources = [
+          'https://unpkg.com/retell-client-js-sdk@latest/dist/index.umd.js',
+          'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/index.umd.js',
+        ];
+        const tryLoad = (idx) => {
+          if (window.RetellWebClient) return resolve(true);
+          if (idx >= sources.length) return reject(new Error('Failed to load Retell SDK'));
+          const s = document.createElement('script');
+          s.src = sources[idx];
+          s.async = true;
+          s.onload = () => {
+            if (window.RetellWebClient) resolve(true);
+            else tryLoad(idx + 1);
+          };
+          s.onerror = () => tryLoad(idx + 1);
+          document.head.appendChild(s);
+        };
+        tryLoad(0);
       });
     }
+    try {
+      await sdkReadyRef.current;
+    } catch (e) {
+      // Allow a clean retry on next click if SDK loading fails once.
+      sdkReadyRef.current = null;
+      throw e;
+    }
+    if (!window.RetellWebClient) {
+      throw new Error('Retell SDK unavailable');
+    }
+  }, []);
+
+  // Load Retell SDK once
+  React.useEffect(() => {
+    ensureRetellSdk().catch((e) => console.error('Retell SDK preload error:', e));
     return () => { teardownCall('idle'); };
-  }, [teardownCall]);
+  }, [ensureRetellSdk, teardownCall]);
 
   const startCall = async () => {
     if (isStartingRef.current || voiceState === 'connecting') return;
@@ -332,9 +355,9 @@ function VoiceSection({ t }) {
       isStartingRef.current = true;
       setVoiceNote('');
       setVoiceState('connecting');
-      await ensureMicPermission();
-      if (sdkReadyRef.current) await sdkReadyRef.current;
-      if (!window.RetellWebClient) throw new Error('Retell SDK unavailable');
+      console.log('[Voice] start requested');
+      await ensureRetellSdk();
+      console.log('[Voice] SDK ready');
 
       // Get access token from Retell
       const resp = await fetch('https://api.retellai.com/v2/create-web-call', {
@@ -345,10 +368,14 @@ function VoiceSection({ t }) {
         },
         body: JSON.stringify({ agent_id: RETELL_AGENT_ID }),
       });
+      console.log('[Voice] token request status', resp.status);
       if (!resp.ok) throw new Error(`Retell token request failed (${resp.status})`);
       const data = await resp.json();
       const accessToken = data && (data.access_token || data.accessToken);
       if (!accessToken) throw new Error('Missing Retell access token');
+      console.log('[Voice] token received');
+      await ensureMicPermission();
+      console.log('[Voice] microphone granted');
 
       const client = new window.RetellWebClient();
       retellRef.current = client;
@@ -375,12 +402,18 @@ function VoiceSection({ t }) {
       console.error('Retell start error:', err);
       const msg = String(err && err.message ? err.message : '');
       const micDenied = /denied|NotAllowedError|Permission/i.test(msg);
+      const micUnavailable = /Microphone API unavailable|secure context|insecure|getUserMedia/i.test(msg);
+      const sdkIssue = /Retell SDK|load/i.test(msg);
       isStartingRef.current = false;
       retellRef.current = null;
       setVoiceState('ended');
       setVoiceNote(
         micDenied
           ? (t.lang === 'ar' ? 'تم رفض إذن الميكروفون.' : 'Microphone permission was denied.')
+          : micUnavailable
+            ? (t.lang === 'ar' ? 'الميكروفون يحتاج HTTPS أو localhost.' : 'Microphone requires HTTPS or localhost.')
+            : sdkIssue
+              ? (t.lang === 'ar' ? 'تعذّر تحميل خدمة الصوت.' : 'Unable to load voice service.')
           : (t.lang === 'ar' ? 'تعذّر بدء الجلسة الصوتية.' : 'Unable to start voice session.')
       );
     }

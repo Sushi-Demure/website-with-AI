@@ -308,13 +308,14 @@ function VoiceSection({ t }) {
     setVoiceTranscript(transcriptRef.current);
   }, []);
 
-  const parseTranscriptItems = React.useCallback((update) => {
+  const parseTranscriptItems = React.useCallback((update, fallbackRole = null) => {
     const out = [];
     const u = update || {};
     const normRole = (raw) => {
       const r = String(raw || '').toLowerCase();
       if (/agent|assistant|ai|bot/.test(r)) return 'ai';
       if (/user|human|caller|customer|client/.test(r)) return 'you';
+      if (fallbackRole === 'ai' || fallbackRole === 'you') return fallbackRole;
       return null;
     };
     const add = (roleRaw, textRaw) => {
@@ -348,6 +349,31 @@ function VoiceSection({ t }) {
     if (Array.isArray(u.parts)) {
       u.parts.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
     }
+
+    // Deep-scan fallback for unknown payload shapes.
+    const seen = new Set();
+    const walk = (node, depth = 0) => {
+      if (!node || depth > 4) return;
+      if (Array.isArray(node)) {
+        node.forEach((x) => walk(x, depth + 1));
+        return;
+      }
+      if (typeof node !== 'object') return;
+      const roleGuess = node.role || node.speaker || node.source || node.participant || node.type || node.channel;
+      [
+        node.text, node.transcript, node.message, node.content, node.final_transcript,
+        node.partial_transcript, node.user_transcript, node.agent_transcript,
+      ].forEach((txt) => {
+        const t = String(txt || '').trim();
+        if (!t) return;
+        const key = `${String(roleGuess || fallbackRole || '')}::${t}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        add(roleGuess, t);
+      });
+      Object.values(node).forEach((v) => walk(v, depth + 1));
+    };
+    walk(u);
 
     return out;
   }, []);
@@ -443,8 +469,8 @@ function VoiceSection({ t }) {
       client.on('call_started',  () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_stop_talking',  () => { setVoiceState('listening'); setVoiceNote(''); });
-      client.on('update', (update) => {
-        const items = parseTranscriptItems(update);
+      const consumeTranscriptPayload = (payload, fallbackRole = null) => {
+        const items = parseTranscriptItems(payload, fallbackRole);
         if (!items.length) return;
         items.forEach((it) => {
           const last = transcriptRef.current[transcriptRef.current.length - 1];
@@ -452,7 +478,11 @@ function VoiceSection({ t }) {
           if (last && last.role === it.role && last.text === it.text) return;
           pushTranscript(it.role, it.text);
         });
-      });
+      };
+
+      client.on('update', (update) => consumeTranscriptPayload(update, null));
+      client.on('transcript', (payload) => consumeTranscriptPayload(payload, null));
+      client.on('metadata', (payload) => consumeTranscriptPayload(payload, null));
       client.on('call_ended',    () => {
         retellRef.current = null;
         isStartingRef.current = false;

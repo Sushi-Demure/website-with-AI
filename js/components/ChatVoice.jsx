@@ -294,113 +294,9 @@ const RETELL_PUBLIC_KEY = 'public_key_3c5ba26e49b46112b6dbb';
 function VoiceSection({ t }) {
   const [voiceState, setVoiceState] = React.useState('idle');
   const [voiceNote, setVoiceNote] = React.useState('');
-  const [voiceTranscript, setVoiceTranscript] = React.useState([]);
   const retellRef = React.useRef(null);
   const isStartingRef = React.useRef(false);
   const sdkReadyRef = React.useRef(null);
-  const transcriptRef = React.useRef([]);
-
-  const upsertTranscriptTurn = React.useCallback((role, text) => {
-    const msg = String(text || '').trim();
-    if (!msg) return;
-    const prev = transcriptRef.current;
-    const last = prev[prev.length - 1];
-
-    // Retell sends many partial updates; keep one row per speaker turn and update it.
-    if (last && last.role === role) {
-      let nextText = last.text;
-      if (msg.startsWith(last.text)) {
-        // Typical streaming partial becoming complete.
-        nextText = msg;
-      } else if (!last.text.startsWith(msg) && msg !== last.text) {
-        // Different fragment from same speaker in same turn -> merge into one final sentence.
-        const joiner = /[.!?؟]$/.test(last.text) ? ' ' : ' ';
-        nextText = `${last.text}${joiner}${msg}`.trim();
-      }
-
-      if (nextText !== last.text) {
-        const updated = [...prev];
-        updated[updated.length - 1] = { ...last, text: nextText, ts: Date.now() };
-        transcriptRef.current = updated;
-      } else {
-        transcriptRef.current = prev;
-      }
-    } else {
-      const item = { role, text: msg, ts: Date.now() };
-      transcriptRef.current = [...prev.slice(-7), item];
-    }
-    setVoiceTranscript(transcriptRef.current);
-  }, []);
-
-  const parseTranscriptItems = React.useCallback((update, fallbackRole = null) => {
-    const out = [];
-    const u = update || {};
-    const normRole = (raw) => {
-      const r = String(raw || '').toLowerCase();
-      if (/agent|assistant|ai|bot/.test(r)) return 'ai';
-      if (/user|human|caller|customer|client/.test(r)) return 'you';
-      if (fallbackRole === 'ai' || fallbackRole === 'you') return fallbackRole;
-      return null;
-    };
-    const add = (roleRaw, textRaw) => {
-      const role = normRole(roleRaw);
-      const text = String(textRaw || '').trim();
-      if (role && text) out.push({ role, text });
-    };
-
-    // Common shapes
-    add(u.role || u.speaker || u.source || u.participant, u.transcript || u.text || u.message || u.content);
-
-    // transcript object shape
-    if (u.transcript && typeof u.transcript === 'object') {
-      add(
-        u.transcript.role || u.transcript.speaker || u.transcript.source || u.transcript.participant,
-        u.transcript.text || u.transcript.content || u.transcript.transcript
-      );
-    }
-
-    // messages array shape
-    if (Array.isArray(u.messages)) {
-      u.messages.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
-    }
-
-    // utterances array shape
-    if (Array.isArray(u.utterances)) {
-      u.utterances.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
-    }
-
-    // chunks/parts nested shape
-    if (Array.isArray(u.parts)) {
-      u.parts.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
-    }
-
-    // Deep-scan fallback for unknown payload shapes.
-    const seen = new Set();
-    const walk = (node, depth = 0) => {
-      if (!node || depth > 4) return;
-      if (Array.isArray(node)) {
-        node.forEach((x) => walk(x, depth + 1));
-        return;
-      }
-      if (typeof node !== 'object') return;
-      const roleGuess = node.role || node.speaker || node.source || node.participant || node.type || node.channel;
-      [
-        node.text, node.transcript, node.message, node.content, node.final_transcript,
-        node.partial_transcript, node.user_transcript, node.agent_transcript,
-      ].forEach((txt) => {
-        const t = String(txt || '').trim();
-        if (!t) return;
-        const key = `${String(roleGuess || fallbackRole || '')}::${t}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        add(roleGuess, t);
-      });
-      Object.values(node).forEach((v) => walk(v, depth + 1));
-    };
-    walk(u);
-
-    return out;
-  }, []);
 
   const teardownCall = React.useCallback((nextState = 'ended', note = '') => {
     try {
@@ -410,8 +306,6 @@ function VoiceSection({ t }) {
     } finally {
       retellRef.current = null;
       isStartingRef.current = false;
-      transcriptRef.current = [];
-      setVoiceTranscript([]);
       setVoiceState(nextState);
       setVoiceNote(note);
     }
@@ -488,22 +382,9 @@ function VoiceSection({ t }) {
 
       const client = new RetellWebClientCtor();
       retellRef.current = client;
-      transcriptRef.current = [];
-      setVoiceTranscript([]);
       client.on('call_started',  () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_stop_talking',  () => { setVoiceState('listening'); setVoiceNote(''); });
-      const consumeTranscriptPayload = (payload, fallbackRole = null) => {
-        const items = parseTranscriptItems(payload, fallbackRole);
-        if (!items.length) return;
-        items.forEach((it) => {
-          upsertTranscriptTurn(it.role, it.text);
-        });
-      };
-
-      client.on('update', (update) => consumeTranscriptPayload(update, null));
-      client.on('transcript', (payload) => consumeTranscriptPayload(payload, null));
-      client.on('metadata', (payload) => consumeTranscriptPayload(payload, null));
       client.on('call_ended',    () => {
         retellRef.current = null;
         isStartingRef.current = false;
@@ -615,21 +496,6 @@ function VoiceSection({ t }) {
                   ? (t.lang === 'ar' ? 'مساعد ديميور الصوتي — جاهز' : 'Demure Voice Assistant — Ready')
                   : (t.lang === 'ar' ? 'جلسة نشطة — Retell AI' : 'Active session — Retell AI')}
               </span>
-            </div>
-
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 14, padding: '12px 14px', marginBottom: 24, textAlign: t.dir === 'rtl' ? 'right' : 'left' }}>
-              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(248,244,239,0.45)', marginBottom: 10 }}>{t.voice.transcriptTitle}</div>
-              <div style={{ maxHeight: 112, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {voiceTranscript.length === 0 ? (
-                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.45)' }}>{t.voice.transcriptEmpty}</div>
-                ) : (
-                  voiceTranscript.map((m, i) => (
-                    <div key={`${m.ts}-${i}`} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, lineHeight: 1.5, color: 'rgba(248,244,239,0.82)' }}>
-                      {m.text}
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
 
             <button onClick={voiceState === 'idle' || voiceState === 'ended' ? startCall : endCall}

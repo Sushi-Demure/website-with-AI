@@ -308,6 +308,50 @@ function VoiceSection({ t }) {
     setVoiceTranscript(transcriptRef.current);
   }, []);
 
+  const parseTranscriptItems = React.useCallback((update) => {
+    const out = [];
+    const u = update || {};
+    const normRole = (raw) => {
+      const r = String(raw || '').toLowerCase();
+      if (/agent|assistant|ai|bot/.test(r)) return 'ai';
+      if (/user|human|caller|customer|client/.test(r)) return 'you';
+      return null;
+    };
+    const add = (roleRaw, textRaw) => {
+      const role = normRole(roleRaw);
+      const text = String(textRaw || '').trim();
+      if (role && text) out.push({ role, text });
+    };
+
+    // Common shapes
+    add(u.role || u.speaker || u.source || u.participant, u.transcript || u.text || u.message || u.content);
+
+    // transcript object shape
+    if (u.transcript && typeof u.transcript === 'object') {
+      add(
+        u.transcript.role || u.transcript.speaker || u.transcript.source || u.transcript.participant,
+        u.transcript.text || u.transcript.content || u.transcript.transcript
+      );
+    }
+
+    // messages array shape
+    if (Array.isArray(u.messages)) {
+      u.messages.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
+    }
+
+    // utterances array shape
+    if (Array.isArray(u.utterances)) {
+      u.utterances.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
+    }
+
+    // chunks/parts nested shape
+    if (Array.isArray(u.parts)) {
+      u.parts.forEach((m) => add(m.role || m.speaker || m.source || m.participant, m.text || m.content || m.transcript || m.message));
+    }
+
+    return out;
+  }, []);
+
   const teardownCall = React.useCallback((nextState = 'ended', note = '') => {
     try {
       if (retellRef.current) retellRef.current.stopCall();
@@ -400,11 +444,14 @@ function VoiceSection({ t }) {
       client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_stop_talking',  () => { setVoiceState('listening'); setVoiceNote(''); });
       client.on('update', (update) => {
-        const u = update || {};
-        const roleRaw = String(u.role || u.speaker || u.source || '').toLowerCase();
-        const role = /agent|assistant|ai/.test(roleRaw) ? 'ai' : (/user|human|caller|customer/.test(roleRaw) ? 'you' : null);
-        const text = u.transcript || u.text || u.message || '';
-        if (role && text) pushTranscript(role, text);
+        const items = parseTranscriptItems(update);
+        if (!items.length) return;
+        items.forEach((it) => {
+          const last = transcriptRef.current[transcriptRef.current.length - 1];
+          // Avoid flooding duplicate partials.
+          if (last && last.role === it.role && last.text === it.text) return;
+          pushTranscript(it.role, it.text);
+        });
       });
       client.on('call_ended',    () => {
         retellRef.current = null;

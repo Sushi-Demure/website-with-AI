@@ -76,6 +76,11 @@ function ChatWidget({ t }) {
     }
   };
 
+  const goToVoice = () => {
+    const el = document.querySelector('#voice');
+    if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+  };
+
   const Bubble = ({ msg }) => {
     const isUser = msg.role === 'user';
     const isRtl = t.dir === 'rtl';
@@ -223,6 +228,14 @@ function ChatWidget({ t }) {
       </section>
 
       {/* Floating chat button */}
+      <button onClick={goToVoice} aria-label="Open voice assistant"
+        style={{ position: 'fixed', bottom: 24, right: t.dir === 'rtl' ? 'auto' : 92, left: t.dir === 'rtl' ? 92 : 'auto', zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', fontSize: 22, transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cream)' }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.07)'; e.currentTarget.style.borderColor = 'var(--pink)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; }}>
+        🎙️
+      </button>
+
+      {/* Floating chat button */}
       <button onClick={() => setOpen(!open)} aria-label="Open chat"
         style={{ position: 'fixed', bottom: 24, right: t.dir === 'rtl' ? 'auto' : 24, left: t.dir === 'rtl' ? 24 : 'auto', zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: 'var(--pink)', border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(240,184,200,0.35)', fontSize: 22, transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
@@ -307,27 +320,18 @@ function VoiceSection({ t }) {
   }, []);
 
   const ensureRetellSdk = React.useCallback(async () => {
-    if (window.RetellWebClient) return;
+    if (window.RetellWebClient) return window.RetellWebClient;
     if (!sdkReadyRef.current) {
       sdkReadyRef.current = new Promise((resolve, reject) => {
-        const sources = [
-          'https://unpkg.com/retell-client-js-sdk@latest/dist/index.umd.js',
-          'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/index.umd.js',
-        ];
-        const tryLoad = (idx) => {
+        // index.html loads RetellWebClient as a module and assigns window.RetellWebClient.
+        let tries = 0;
+        const check = () => {
           if (window.RetellWebClient) return resolve(true);
-          if (idx >= sources.length) return reject(new Error('Failed to load Retell SDK'));
-          const s = document.createElement('script');
-          s.src = sources[idx];
-          s.async = true;
-          s.onload = () => {
-            if (window.RetellWebClient) resolve(true);
-            else tryLoad(idx + 1);
-          };
-          s.onerror = () => tryLoad(idx + 1);
-          document.head.appendChild(s);
+          tries += 1;
+          if (tries > 40) return reject(new Error('Failed to load Retell SDK'));
+          setTimeout(check, 100);
         };
-        tryLoad(0);
+        check();
       });
     }
     try {
@@ -340,6 +344,7 @@ function VoiceSection({ t }) {
     if (!window.RetellWebClient) {
       throw new Error('Retell SDK unavailable');
     }
+    return window.RetellWebClient;
   }, []);
 
   // Load Retell SDK once
@@ -355,9 +360,7 @@ function VoiceSection({ t }) {
       isStartingRef.current = true;
       setVoiceNote('');
       setVoiceState('connecting');
-      console.log('[Voice] start requested');
-      await ensureRetellSdk();
-      console.log('[Voice] SDK ready');
+      const RetellWebClientCtor = await ensureRetellSdk();
 
       // Get access token from Retell
       const resp = await fetch('https://api.retellai.com/v2/create-web-call', {
@@ -368,16 +371,13 @@ function VoiceSection({ t }) {
         },
         body: JSON.stringify({ agent_id: RETELL_AGENT_ID }),
       });
-      console.log('[Voice] token request status', resp.status);
       if (!resp.ok) throw new Error(`Retell token request failed (${resp.status})`);
       const data = await resp.json();
       const accessToken = data && (data.access_token || data.accessToken);
       if (!accessToken) throw new Error('Missing Retell access token');
-      console.log('[Voice] token received');
       await ensureMicPermission();
-      console.log('[Voice] microphone granted');
 
-      const client = new window.RetellWebClient();
+      const client = new RetellWebClientCtor();
       retellRef.current = client;
       client.on('call_started',  () => { setVoiceState('active'); setVoiceNote(''); });
       client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });

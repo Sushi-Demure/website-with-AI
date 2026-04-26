@@ -75,8 +75,10 @@ function ReservationSection({ t }) {
   const v = t.reservation.validate;
   const validate = () => {
     const e = {};
+    const phoneTrim = String(form.phone || '').trim();
+    if (!phoneTrim) e.phone = v.phone;
+    else if (window.SushiPhoneValidation && !window.SushiPhoneValidation.isValidPhone(form.phone)) e.phone = v.phoneInvalid;
     if (!form.name.trim()) e.name = v.name;
-    if (!form.phone.trim()) e.phone = v.phone;
     if (!form.date) e.date = v.date;
     if (!form.time) e.time = v.time;
     if (!form.guests && form.guests !== 0) e.guests = v.guests;
@@ -96,6 +98,8 @@ function ReservationSection({ t }) {
   };
 
   const confirmBooking = async () => {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); setStatus('review'); return; }
     setStatus('loading');
     try {
       const res = await window.SushiServices.submitReservation({ ...form, lang: t.lang });

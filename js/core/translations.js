@@ -116,6 +116,7 @@ window.TRANSLATIONS = {
       validate: {
         name: 'Name is required',
         phone: 'Phone is required',
+        phoneInvalid: 'Please enter a valid phone number (e.g. 05XXXXXXXX, +9665XXXXXXXXX, or international with country code).',
         date: 'Date is required',
         time: 'Time is required',
         guests: 'Guests required',
@@ -260,6 +261,7 @@ window.TRANSLATIONS = {
       submit: 'Submit Complaint',
       submitting: 'Submitting...',
       validationDetails: 'Please enter your complaint details.',
+      validationPhone: 'Please enter a valid phone number or leave the field empty.',
       success: 'Your complaint has been submitted successfully. Our team will review it soon.',
       error: 'Sorry, we could not submit your complaint right now. Please try again.',
       another: 'Submit another complaint',
@@ -410,6 +412,7 @@ window.TRANSLATIONS = {
       validate: {
         name: 'الرجاء إدخال الاسم',
         phone: 'الرجاء إدخال رقم الجوال',
+        phoneInvalid: 'يُرجى إدخال رقماً صالحاً (مثل 05XXXXXXXX أو ‎+9665XXXXXXXXX أو دولي مع رمز الدولة).',
         date: 'اختر التاريخ',
         time: 'اختر الوقت',
         guests: 'حدد عدد الضيوف',
@@ -551,6 +554,7 @@ window.TRANSLATIONS = {
       submit: 'إرسال الشكوى',
       submitting: 'جارٍ الإرسال…',
       validationDetails: 'يرجى كتابة تفاصيل الشكوى.',
+      validationPhone: 'يُرجى إدخال رقم جوال صالح أو ترك الحقل فارغاً.',
       success: 'تم إرسال شكواك بنجاح. سيراجعها فريقنا قريباً.',
       error: 'عذراً، تعذّر إرسال الشكوى حالياً. حاول مرة أخرى بعد قليل.',
       another: 'إرسال شكوى أخرى',

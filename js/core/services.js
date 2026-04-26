@@ -27,6 +27,14 @@ function buildReservationSpecialRequest(payload) {
 async function submitReservation(payload) {
   const N8N_RESERVATION_WEBHOOK_URL = 'https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/91c29aa5-e239-431f-b5e0-41270ec950c8';
 
+  const phoneT = String(payload.phone || '').trim();
+  if (!phoneT) {
+    return { status: 'error', detail: 'Phone is required.' };
+  }
+  if (window.SushiPhoneValidation && !window.SushiPhoneValidation.isValidPhone(payload.phone)) {
+    return { status: 'error', detail: 'Please enter a valid phone number.' };
+  }
+
   const guestsNum = parseInt(String(payload.guests).trim(), 10);
   const rawTable = String(payload.preferred_table || '').trim();
   const wantsAutoTable = !rawTable || /^(auto[\s-]?assign|none|no|skip|n\/a)$/i.test(rawTable);
@@ -35,7 +43,7 @@ async function submitReservation(payload) {
     date: String(payload.date || '').trim(),
     time: String(payload.time || '').trim(),
     guests: Number.isFinite(guestsNum) && guestsNum > 0 ? guestsNum : 1,
-    phone: String(payload.phone || '').trim(),
+    phone: phoneT,
     special_request: buildReservationSpecialRequest(payload),
     preferred_table: wantsAutoTable ? '' : rawTable,
   };
@@ -189,9 +197,14 @@ async function submitComplaint(payload) {
   let category = String(payload.category || 'general').trim().toLowerCase();
   if (!allowed.has(category)) category = 'general';
 
+  const phoneT = String(payload.phone || '').trim();
+  if (phoneT && window.SushiPhoneValidation && !window.SushiPhoneValidation.isValidPhone(payload.phone)) {
+    return { ok: false };
+  }
+
   const body = {
     name: String(payload.name || '').trim(),
-    phone: String(payload.phone || '').trim(),
+    phone: phoneT,
     complaint_text: String(payload.complaint_text || '').trim(),
     category,
     source: 'website',

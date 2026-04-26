@@ -20,6 +20,139 @@ const COMPLAINTS_GET_EXTRA_QUERY = '';
 /** Default rows per page (client-side pagination over the full fetched list). */
 const DEFAULT_PAGE_SIZE = 10;
 
+/** Session flag after successful manager login (tab-scoped). */
+const MANAGER_SESSION_KEY = 'sushi_demure_manager_auth';
+
+function getManagerAccessKey() {
+  return String(typeof window !== 'undefined' && window.MANAGER_ACCESS_KEY != null ? window.MANAGER_ACCESS_KEY : '').trim();
+}
+
+function ManagerLogin({ onSuccess }) {
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const configured = getManagerAccessKey().length > 0;
+
+  const submit = (e) => {
+    e.preventDefault();
+    setError('');
+    const key = getManagerAccessKey();
+    if (!key) {
+      setError('Access key is not set. Edit js/manager/auth.config.js on the server.');
+      return;
+    }
+    if (password === key) {
+      sessionStorage.setItem(MANAGER_SESSION_KEY, '1');
+      onSuccess();
+      return;
+    }
+    setError('That access key is incorrect. Please try again.');
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--dark)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'clamp(1.25rem,5vw,2.5rem)',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 420,
+          background: 'rgba(22, 43, 30, 0.85)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 28,
+          padding: 'clamp(1.75rem,4vw,2.5rem)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.45)',
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.5rem,4vw,1.85rem)', fontWeight: 700, color: 'var(--cream)', lineHeight: 1.2 }}>
+            Sushi Demure
+          </div>
+          <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--pink)', letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 10 }}>
+            Manager
+          </div>
+        </div>
+
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.55)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 24px' }}>
+          Enter the access key to open the complaints dashboard.
+        </p>
+
+        <form onSubmit={submit} noValidate>
+          <label htmlFor="mgr-access" style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 8, letterSpacing: '0.06em' }}>
+            Access key
+          </label>
+          <input
+            id="mgr-access"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (error) setError('');
+            }}
+            disabled={!configured}
+            placeholder={configured ? '••••••••' : 'Not configured'}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.06)',
+              border: `1px solid ${error ? 'rgba(229,144,122,0.45)' : 'rgba(255,255,255,0.12)'}`,
+              borderRadius: 14,
+              padding: '14px 16px',
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: 15,
+              color: 'var(--cream)',
+              outline: 'none',
+              marginBottom: 16,
+            }}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--pink)'; }}
+            onBlur={(e) => { e.target.style.borderColor = error ? 'rgba(229,144,122,0.45)' : 'rgba(255,255,255,0.12)'; }}
+          />
+
+          {error && (
+            <p role="alert" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#e5907a', margin: '0 0 16px', lineHeight: 1.5 }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={!configured}
+            style={{
+              width: '100%',
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: 15,
+              fontWeight: 600,
+              padding: '14px 20px',
+              borderRadius: 24,
+              border: 'none',
+              background: configured ? 'var(--pink)' : 'rgba(255,255,255,0.1)',
+              color: configured ? 'var(--dark)' : 'rgba(248,244,239,0.35)',
+              cursor: configured ? 'pointer' : 'not-allowed',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Sign in
+          </button>
+        </form>
+
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.35)', textAlign: 'center', marginTop: 22, lineHeight: 1.5 }}>
+          <a href="index.html" style={{ color: 'rgba(248,244,239,0.55)', textDecoration: 'none', borderBottom: '1px solid rgba(242,184,198,0.35)' }}>
+            ← Back to website
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function buildComplaintsUrl(source, category, status) {
   const p = new URLSearchParams();
   if (source !== 'all') p.set('source', source);
@@ -210,7 +343,7 @@ function Badge({ children, style }) {
   );
 }
 
-function ManagerComplaintsApp() {
+function ManagerComplaintsApp({ onLogout }) {
   const [source, setSource] = React.useState('all');
   const [category, setCategory] = React.useState('all');
   const [status, setStatus] = React.useState('all');
@@ -332,23 +465,46 @@ function ManagerComplaintsApp() {
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, fontWeight: 700, color: 'var(--cream)' }}>Sushi Demure</div>
             <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--pink)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>Manager</div>
           </div>
-          <a
-            href="index.html"
-            style={{
-              fontFamily: 'DM Sans, sans-serif',
-              fontSize: 13,
-              color: 'rgba(248,244,239,0.7)',
-              textDecoration: 'none',
-              padding: '8px 16px',
-              borderRadius: 24,
-              border: '1px solid rgba(255,255,255,0.12)',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pink)'; e.currentTarget.style.color = 'var(--cream)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,244,239,0.7)'; }}
-          >
-            ← Main site
-          </a>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+            {typeof onLogout === 'function' && (
+              <button
+                type="button"
+                onClick={onLogout}
+                style={{
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: 13,
+                  color: 'rgba(248,244,239,0.8)',
+                  background: 'rgba(255,255,255,0.06)',
+                  padding: '8px 16px',
+                  borderRadius: 24,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pink)'; e.currentTarget.style.color = 'var(--cream)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,244,239,0.8)'; }}
+              >
+                Sign out
+              </button>
+            )}
+            <a
+              href="index.html"
+              style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 13,
+                color: 'rgba(248,244,239,0.7)',
+                textDecoration: 'none',
+                padding: '8px 16px',
+                borderRadius: 24,
+                border: '1px solid rgba(255,255,255,0.12)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pink)'; e.currentTarget.style.color = 'var(--cream)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,244,239,0.7)'; }}
+            >
+              ← Main site
+            </a>
+          </div>
         </div>
       </header>
 
@@ -574,5 +730,21 @@ function ManagerComplaintsApp() {
   );
 }
 
+function ManagerRoot() {
+  const [authed, setAuthed] = React.useState(
+    () => sessionStorage.getItem(MANAGER_SESSION_KEY) === '1',
+  );
+
+  const onLogout = React.useCallback(() => {
+    sessionStorage.removeItem(MANAGER_SESSION_KEY);
+    setAuthed(false);
+  }, []);
+
+  if (!authed) {
+    return <ManagerLogin onSuccess={() => setAuthed(true)} />;
+  }
+  return <ManagerComplaintsApp onLogout={onLogout} />;
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ManagerComplaintsApp />);
+root.render(<ManagerRoot />);

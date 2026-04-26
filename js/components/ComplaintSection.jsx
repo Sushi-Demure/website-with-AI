@@ -8,6 +8,7 @@ function ComplaintSection({ t }) {
   const c = t.complaint;
   const [name, setName] = React.useState('');
   const [phone, setPhone] = React.useState('');
+  const [phoneError, setPhoneError] = React.useState('');
   const [category, setCategory] = React.useState('general');
   const [details, setDetails] = React.useState('');
   const [detailError, setDetailError] = React.useState('');
@@ -43,7 +44,13 @@ function ComplaintSection({ t }) {
       setDetailError(c.validationDetails);
       return;
     }
+    const trimmedPhone = String(phone).trim();
+    if (trimmedPhone && window.SushiPhoneValidation && !window.SushiPhoneValidation.isValidPhone(phone)) {
+      setPhoneError(c.validationPhone);
+      return;
+    }
     setDetailError('');
+    setPhoneError('');
     setUiStatus('submitting');
     const res = await window.SushiServices.submitComplaint({
       name: String(name).trim(),
@@ -175,16 +182,26 @@ function ComplaintSection({ t }) {
                       <input
                         id="complaint-phone"
                         name="phone"
-                        type="text"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          if (phoneError) setPhoneError('');
+                        }}
                         placeholder={c.phonePh}
                         disabled={uiStatus === 'submitting'}
-                        style={inputShell(false)}
+                        style={inputShell(!!phoneError)}
+                        aria-invalid={phoneError ? 'true' : 'false'}
+                        aria-describedby={phoneError ? 'complaint-phone-err' : undefined}
                         onFocus={(e) => { e.target.style.borderColor = 'var(--pink)'; }}
-                        onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        onBlur={(e) => { e.target.style.borderColor = phoneError ? '#e5907a' : 'rgba(255,255,255,0.1)'; }}
                       />
                       <span style={hintStyle}>{c.phoneHint}</span>
+                      {phoneError && (
+                        <span id="complaint-phone-err" style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#e5907a', marginTop: 8 }}>{phoneError}</span>
+                      )}
                     </div>
                   </div>
 

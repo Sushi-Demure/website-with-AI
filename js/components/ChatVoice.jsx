@@ -47,7 +47,7 @@ function ChatWidget({ t }) {
       const res = await window.SushiServices.sendChatMessage(msg, messages, t.lang);
       setMessages(prev => [...prev, { role: 'ai', text: res.reply, ts: makeTimestamp() }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'ai', text: t.lang === 'ar' ? 'عذراً، حدث خطأ. حاول مرة أخرى.' : 'Sorry, something went wrong. Please try again.', ts: makeTimestamp() }]);
+      setMessages(prev => [...prev, { role: 'ai', text: t.chat.errSend, ts: makeTimestamp() }]);
     } finally {
       setTyping(false);
     }
@@ -166,8 +166,8 @@ function ChatWidget({ t }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px,1fr))', gap: 64, alignItems: 'start' }}>
             {/* Left — info */}
             <div>
-              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
-                {t.lang === 'ar' ? 'مساعد ذكي' : 'AI Assistant'}
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
+                {t.chat.widgetTitle}
               </span>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,3.5vw,3rem)', color: 'var(--cream)', margin: '0 0 20px', lineHeight: 1.2 }}>{t.chat.title}</h2>
               <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.6)', lineHeight: 1.8, marginBottom: 32 }}>{t.chat.sub}</p>
@@ -190,8 +190,8 @@ function ChatWidget({ t }) {
               <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--green)', border: '1px solid rgba(240,184,200,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✦</div>
                 <div>
-                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--cream)' }}>Demure AI</div>
-                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#7dcea0' }}>● {t.lang === 'ar' ? 'متصل' : 'Online'}</div>
+                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: 'var(--cream)' }}>{t.chat.brandName}</div>
+                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#7dcea0' }}>● {t.chat.online}</div>
                 </div>
               </div>
               {/* Messages */}
@@ -228,7 +228,7 @@ function ChatWidget({ t }) {
       </section>
 
       {/* Floating chat button */}
-      <button onClick={goToVoice} aria-label="Open voice assistant"
+      <button onClick={goToVoice} aria-label={t.voice.ariaOpenVoice}
         style={{ position: 'fixed', bottom: 24, right: t.dir === 'rtl' ? 'auto' : 92, left: t.dir === 'rtl' ? 92 : 'auto', zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', fontSize: 22, transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cream)' }}
         onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.07)'; e.currentTarget.style.borderColor = 'var(--pink)'; }}
         onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; }}>
@@ -236,7 +236,7 @@ function ChatWidget({ t }) {
       </button>
 
       {/* Floating chat button */}
-      <button onClick={() => setOpen(!open)} aria-label="Open chat"
+      <button onClick={() => setOpen(!open)} aria-label={t.chat.ariaOpenChat}
         style={{ position: 'fixed', bottom: 24, right: t.dir === 'rtl' ? 'auto' : 24, left: t.dir === 'rtl' ? 24 : 'auto', zIndex: 900, width: 56, height: 56, borderRadius: '50%', background: 'var(--pink)', border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(240,184,200,0.35)', fontSize: 22, transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
@@ -250,8 +250,8 @@ function ChatWidget({ t }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>✦</div>
               <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--cream)' }}>Demure AI</div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#7dcea0' }}>● {t.lang === 'ar' ? 'متصل' : 'Online'}</div>
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--cream)' }}>{t.chat.brandName}</div>
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#7dcea0' }}>● {t.chat.online}</div>
               </div>
             </div>
             <button onClick={() => setOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 16, padding: 4 }}>✕</button>
@@ -396,7 +396,7 @@ function VoiceSection({ t }) {
         retellRef.current = null;
         isStartingRef.current = false;
         setVoiceState('ended');
-        setVoiceNote(t.lang === 'ar' ? 'انقطع الاتصال. حاول مرة أخرى.' : 'Connection dropped. Please try again.');
+        setVoiceNote(t.voice.errDisconnected);
       });
       await client.startCall({ accessToken, sampleRate: 24000 });
       isStartingRef.current = false;
@@ -413,14 +413,14 @@ function VoiceSection({ t }) {
       setVoiceState('ended');
       setVoiceNote(
         micDenied
-          ? (t.lang === 'ar' ? 'تم رفض إذن الميكروفون.' : 'Microphone permission was denied.')
+          ? t.voice.errMicDenied
           : micUnavailable
-            ? (t.lang === 'ar' ? 'الميكروفون يحتاج HTTPS أو localhost.' : 'Microphone requires HTTPS or localhost.')
+            ? t.voice.errMicInsecure
             : domainNotAllowed
-              ? (t.lang === 'ar' ? 'مفتاح Retell غير مسموح لهذا الدومين.' : 'Retell public key is not allowed for this domain.')
+              ? t.voice.errRetellDomain
             : sdkIssue
-              ? (t.lang === 'ar' ? 'تعذّر تحميل خدمة الصوت.' : 'Unable to load voice service.')
-          : (t.lang === 'ar' ? 'تعذّر بدء الجلسة الصوتية.' : 'Unable to start voice session.')
+              ? t.voice.errLoadVoice
+          : t.voice.errStartSession
       );
     }
   };
@@ -447,8 +447,8 @@ function VoiceSection({ t }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 64, alignItems: 'center' }}>
           {/* Text */}
           <div>
-            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
-              {t.lang === 'ar' ? 'صوتي' : 'Voice AI'}
+            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
+              {t.voice.panelTitle}
             </span>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,3.5vw,3rem)', color: 'var(--cream)', margin: '0 0 20px', lineHeight: 1.2 }}>{t.voice.title}</h2>
             <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.65)', lineHeight: 1.8, marginBottom: 32 }}>{t.voice.sub}</p>
@@ -457,7 +457,7 @@ function VoiceSection({ t }) {
               {Object.entries(stateConfig).map(([s, c]) => (
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: voiceState === s ? 1 : 0.4, transition: 'opacity 0.3s' }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.dot, flexShrink: 0 }}/>
-                  <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--cream)', textTransform: 'capitalize' }}>{s}</span>
+                  <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--cream)' }}>{t.voice.stateLabel[s] || s}</span>
                   {voiceState === s && <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.5)' }}>— {c.label}</span>}
                 </div>
               ))}
@@ -493,8 +493,8 @@ function VoiceSection({ t }) {
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: voiceState === 'active' || voiceState === 'listening' ? '#7dcea0' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }}/>
               <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.5)' }}>
                 {voiceState === 'idle' || voiceState === 'ended'
-                  ? (t.lang === 'ar' ? 'مساعد ديميور الصوتي — جاهز' : 'Demure Voice Assistant — Ready')
-                  : (t.lang === 'ar' ? 'جلسة نشطة — Retell AI' : 'Active session — Retell AI')}
+                  ? t.voice.statusReady
+                  : t.voice.statusActive}
               </span>
             </div>
 

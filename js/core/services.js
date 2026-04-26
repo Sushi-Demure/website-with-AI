@@ -105,7 +105,7 @@ async function submitReservation(payload) {
     const msg = err && err.message ? String(err.message) : 'Network error';
     const isAr = String(payload.lang || '') === 'ar';
     const networkHint = isAr
-      ? 'تعذّر الوصول إلى خادم الحجز (شبكة، DNS، جدار ناري، أو CORS). راجع تبويب Network في المتصفح وملف INTEGRATION.md.'
+      ? 'تعذّر الاتصال بخادم الحجز (الشبكة، DNS، جدار الحماية، أو CORS). راجع تبويب «Network» في المتصفح وملف INTEGRATION.md.'
       : 'Could not reach the booking server (network, DNS, firewall, or CORS). Check the browser Network tab and INTEGRATION.md.';
     return {
       status: 'error',

@@ -72,17 +72,18 @@ function ReservationSection({ t }) {
     };
   }, [status, result, form, review]);
 
+  const v = t.reservation.validate;
   const validate = () => {
     const e = {};
-    if (!form.name.trim()) e.name = t.lang === 'ar' ? 'الاسم مطلوب' : 'Name is required';
-    if (!form.phone.trim()) e.phone = t.lang === 'ar' ? 'رقم الهاتف مطلوب' : 'Phone is required';
-    if (!form.date) e.date = t.lang === 'ar' ? 'التاريخ مطلوب' : 'Date is required';
-    if (!form.time) e.time = t.lang === 'ar' ? 'الوقت مطلوب' : 'Time is required';
-    if (!form.guests && form.guests !== 0) e.guests = t.lang === 'ar' ? 'عدد الضيوف مطلوب' : 'Guests required';
+    if (!form.name.trim()) e.name = v.name;
+    if (!form.phone.trim()) e.phone = v.phone;
+    if (!form.date) e.date = v.date;
+    if (!form.time) e.time = v.time;
+    if (!form.guests && form.guests !== 0) e.guests = v.guests;
     else {
       const n = parseInt(String(form.guests).trim(), 10);
-      if (!Number.isFinite(n) || n < 1) e.guests = t.lang === 'ar' ? 'أدخل عدداً صحيحاً (1+)' : 'Enter a valid guest count (1+)';
-      else if (n > 50) e.guests = t.lang === 'ar' ? 'للحجوزات الكبيرة يرجى الاتصال بنا' : 'For large parties, please call us';
+      if (!Number.isFinite(n) || n < 1) e.guests = v.guestsInvalid;
+      else if (n > 50) e.guests = v.guestsLarge;
     }
     return e;
   };
@@ -135,7 +136,7 @@ function ReservationSection({ t }) {
       <label style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'rgba(248,244,239,0.6)', letterSpacing:'0.04em' }}>{f[key]}</label>
       <select value={form[key]} onChange={e => setForm(p=>({...p,[key]:e.target.value}))} dir={t.dir}
         style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:'12px 16px', fontFamily:'DM Sans,sans-serif', fontSize:14, color: form[key]?'var(--cream)':'rgba(248,244,239,0.35)', outline:'none', width:'100%', boxSizing:'border-box', appearance:'none', cursor:'pointer' }}>
-        <option value="" style={{background:'#1a2e22'}}>{t.lang==='ar'?'اختر...':'Select...'}</option>
+        <option value="" style={{background:'#1a2e22'}}>{t.reservation.selectPlaceholder}</option>
         {options.map(o => <option key={o} value={o} style={{background:'#1a2e22'}}>{o}</option>)}
       </select>
     </div>
@@ -154,7 +155,7 @@ function ReservationSection({ t }) {
         {/* Header */}
         <div style={{ textAlign:'center', marginBottom:48 }}>
           <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:12, letterSpacing:'0.22em', textTransform:'uppercase', color:'var(--pink)', display:'block', marginBottom:12 }}>
-            {t.lang==='ar'?'الحجز':'Reservations'}
+            {t.reservation.sectionKicker}
           </span>
           <h2 style={{ fontFamily:'Playfair Display,serif', fontSize:'clamp(2rem,4vw,3.2rem)', color:'var(--cream)', margin:'0 0 12px' }}>{t.reservation.title}</h2>
           <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:16, color:'rgba(248,244,239,0.5)', margin:'0 0 32px' }}>{t.reservation.sub}</p>
@@ -273,7 +274,7 @@ function ReservationSection({ t }) {
                 const c = String(code || '').trim();
                 if (!c) return '';
                 if (/^table\s+/i.test(c)) return c;
-                return t.lang === 'ar' ? `طاولة ${c}` : `Table ${c}`;
+                return `${t.reservation.tablePrefix} ${c}`;
               };
               const prefTiles = [
                 [sum.seating, s.seating],
@@ -424,18 +425,18 @@ function ReservationSection({ t }) {
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               <div style={{ background:'var(--green)', borderRadius:20, padding:'1.75rem', border:'1px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ fontFamily:'Playfair Display,serif', fontSize:18, color:'var(--cream)', marginBottom:16 }}>
-                  {t.lang==='ar'?'ساعات العمل':'Opening Hours'}
+                  {t.contact.hours}
                 </div>
-                {['11:30 AM – 11:30 PM'].map((h,i) => (
+                {[{ day: t.reservation.dailyLabel, time: t.reservation.hoursRange }].map((h,i) => (
                   <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-                    <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'rgba(248,244,239,0.6)' }}>{t.lang==='ar'?'يومياً':'Daily'}</span>
-                    <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'var(--cream)', fontWeight:500 }}>{h}</span>
+                    <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'rgba(248,244,239,0.6)' }}>{h.day}</span>
+                    <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'var(--cream)', fontWeight:500 }}>{h.time}</span>
                   </div>
                 ))}
               </div>
               <div style={{ background:'rgba(255,255,255,0.03)', borderRadius:20, padding:'1.75rem', border:'1px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ fontFamily:'Playfair Display,serif', fontSize:18, color:'var(--cream)', marginBottom:16 }}>
-                  {t.lang==='ar'?'فروعنا':'Our Branches'}
+                  {t.contact.branches}
                 </div>
                 {t.contact.branchList.map((b,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
@@ -446,14 +447,14 @@ function ReservationSection({ t }) {
               </div>
               <div style={{ background:'rgba(240,184,200,0.07)', borderRadius:20, padding:'1.5rem', border:'1px solid rgba(240,184,200,0.15)' }}>
                 <div style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'var(--pink)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                  {t.lang==='ar'?'تحتاج مساعدة؟':'Need help?'}
+                  {t.reservation.needHelpTitle}
                 </div>
                 <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'rgba(248,244,239,0.6)', margin:'0 0 14px', lineHeight:1.6 }}>
-                  {t.lang==='ar'?'تواصل معنا عبر واتساب أو استخدم المساعد الذكي.':'Chat with our AI or reach us on WhatsApp for help with your booking.'}
+                  {t.reservation.needHelpBody}
                 </p>
                 <a href="https://wa.me/966537854826" target="_blank" rel="noreferrer"
                   style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(37,211,102,0.15)', color:'#25d366', padding:'8px 16px', borderRadius:20, fontFamily:'DM Sans,sans-serif', fontSize:13, textDecoration:'none', border:'1px solid rgba(37,211,102,0.2)' }}>
-                  <span>💬</span> {t.lang==='ar'?'واتساب':'WhatsApp'}
+                  <span>💬</span> {t.reservation.whatsappCta}
                 </a>
               </div>
             </div>

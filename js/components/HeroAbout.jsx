@@ -44,7 +44,7 @@ function HeroSection({ t }) {
           <div style={{ display:'inline-flex', alignItems:'center', gap:12, marginBottom:32, background:'rgba(242,184,198,0.08)', border:'1px solid rgba(242,184,198,0.2)', borderRadius:32, padding:'6px 18px', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(18px)', transition:'all 700ms cubic-bezier(0.22,1,0.36,1)' }}>
             <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--pink)', display:'inline-block' }}/>
             <span style={{ fontFamily:'DM Sans,sans-serif', fontSize:12, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--pink)', fontWeight:500 }}>
-              {t.lang === 'ar' ? 'سوشي ديميور — الرياض · جدة · المدينة' : 'Sushi Demure — Riyadh · Jeddah · Medina'}
+              {t.hero.locationsLine}
             </span>
           </div>
 
@@ -93,11 +93,15 @@ function HeroSection({ t }) {
 
 // ── Featured Dishes ──────────────────────────────────────────
 
+// “Our Story” / art column — local brand asset
+const ART_SECTION_IMAGE = 'img/ArtSection.png';
+
+// HungerStation / Delivery Hero menu imagery (order: Sushi Demure, Special Volcano, Ocean Roll, Sushi Cake)
 const FEATURED = [
-  { nameEn: 'Sushi Demure Roll', nameAr: 'رول سوشي ديميور', descEn: 'Our most iconic creation', descAr: 'أيقونيتنا الأشهر', tag: 'Signature', color: '#2d5a40', img: 'https://picsum.photos/seed/sushi1/600/450' },
-  { nameEn: 'Special Volcano', nameAr: 'سبيشال فولكينو', descEn: 'Explosive flavors, fiery finish', descAr: 'نكهات متفجرة، نهاية نارية', tag: 'Best Seller', color: '#3a4a2d', img: 'https://picsum.photos/seed/sushi2/600/450' },
-  { nameEn: 'Ocean Roll', nameAr: 'أوشن رول', descEn: 'Fresh from the deep, crispy outside', descAr: 'طازج من الأعماق، مقرمش من الخارج', tag: 'Premium', color: '#2d3a5a', img: 'https://picsum.photos/seed/sushi3/600/450' },
-  { nameEn: 'Sushi Cake', nameAr: 'كيكة السوشي', descEn: 'Art you can eat, made to order', descAr: 'فن يمكنك تناوله، يُصنع عند الطلب', tag: 'New', color: '#5a2d45', img: 'https://picsum.photos/seed/sushi4/600/450' },
+  { nameEn: 'Sushi Demure', nameAr: 'سوشي ديميور', descEn: 'Special maki with choice of filling, Japanese mayo, and sriracha.', descAr: 'ماكي مميّزة بحشوٍ اختياري ومايونيز ياباني وسيراتشا.', tagEn: 'Signature', tagAr: 'توقيع', price: 55, calories: 50, color: '#2d5a40', img: 'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/5539d9d18d366867e1583f3b18046036.png?quality=75&webp=true&width=1440' },
+  { nameEn: 'Special Volcano', nameAr: 'سبيشال فولكينو', descEn: 'Shrimp, avocado, cucumber, bang bang sauce, and crunchy cornflakes.', descAr: 'روبيان، أفوكادو، خيار، صلصة بانج بانج، وذرة رقائق مقرمشة.', tagEn: 'Best Seller', tagAr: 'الأكثر طلباً', price: 30, calories: 33, color: '#3a4a2d', img: 'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/35afc2d1621505913d3465c3cf603d63.png?quality=75&webp=true&width=1440' },
+  { nameEn: 'Ocean Roll', nameAr: 'أوشن رول', descEn: 'Crispy shrimp tempura with Japanese eel sauce; rich smoky taste.', descAr: 'روبيان تمبورا مقرمش بصلصة الأنقليس اليابانية؛ نكهة غنية مائلة للدخان.', tagEn: 'Premium', tagAr: 'فاخر', price: 28, calories: 61, color: '#2d3a5a', img: 'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/777b800259064f521d6e81cceca1b432.jpg?quality=75&webp=true&width=1440' },
+  { nameEn: 'Sushi Cake 3 Persons', nameAr: 'كيكة السوشي (٣ أشخاص)', descEn: 'Sushi cake signature item, first time in Riyadh.', descAr: 'كيكة سوشي مميّزة، تُقدَّم لأول مرة في الرياض.', tagEn: 'New', tagAr: 'جديد', price: 299, calories: 1590, color: '#5a2d45', img: 'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/4a11cb3698ac3d65404c1e3f8b43ebd0.png?quality=75&webp=true&width=1440' },
 ];
 
 function FeaturedSection({ t }) {
@@ -105,8 +109,8 @@ function FeaturedSection({ t }) {
     <section id="featured" style={{ background: 'var(--dark-2)', padding: 'clamp(4rem,8vw,7rem) clamp(1.5rem,5vw,4rem)' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
-            {t.lang === 'ar' ? 'الأكثر طلبًا' : 'Most Ordered'}
+          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
+            {t.featured.mostOrdered}
           </span>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,4vw,3.2rem)', color: 'var(--cream)', margin: '0 0 12px' }}>{t.featured.title}</h2>
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.5)', margin: 0 }}>{t.featured.sub}</p>
@@ -124,15 +128,20 @@ function FeaturedSection({ t }) {
                   : <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', opacity:0.4 }}><span style={{ fontSize:32 }}>🍣</span></div>
                 }
               </div>
-              <span style={{ display: 'inline-block', background: 'rgba(240,184,200,0.2)', color: 'var(--pink)', padding: '3px 12px', borderRadius: 20, fontSize: 11, fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
-                {t.lang === 'ar' ? t.featured.badge : d.tag}
+              <span style={{ display: 'inline-block', background: 'rgba(240,184,200,0.2)', color: 'var(--pink)', padding: '3px 12px', borderRadius: 20, fontSize: 11, fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.1em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', marginBottom: 10 }}>
+                {t.lang === 'ar' ? d.tagAr : d.tagEn}
               </span>
               <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: 'var(--cream)', margin: '0 0 8px' }}>
                 {t.lang === 'ar' ? d.nameAr : d.nameEn}
               </h3>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.6)', margin: 0 }}>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.6)', margin: '0 0 14px' }}>
                 {t.lang === 'ar' ? d.descAr : d.descEn}
               </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px 16px', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.85)' }}>
+                <span style={{ fontWeight: 600, color: 'var(--cream)' }}>{d.price} {t.menu.sar}</span>
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(248,244,239,0.25)' }} />
+                <span style={{ color: 'rgba(248,244,239,0.6)' }}>{d.calories} {t.menu.caloriesUnit}</span>
+              </div>
               {/* Corner deco */}
               <div style={{ position: 'absolute', bottom: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }}/>
             </div>
@@ -151,8 +160,8 @@ function AboutSection({ t }) {
       <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px,1fr))', gap: 64, alignItems: 'center' }}>
         {/* Text */}
         <div>
-          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
-            {t.lang === 'ar' ? 'قصتنا' : 'Our Story'}
+          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 16 }}>
+            {t.about.kicker}
           </span>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,3.5vw,3rem)', color: 'var(--cream)', margin: '0 0 24px', lineHeight: 1.2 }}>{t.about.title}</h2>
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.65)', lineHeight: 1.8, marginBottom: 16 }}>{t.about.body}</p>
@@ -170,19 +179,19 @@ function AboutSection({ t }) {
         {/* Visual */}
         <div style={{ position: 'relative' }}>
           <div style={{ background: 'var(--green)', borderRadius: 24, aspectRatio: '4/5', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-            <img src="https://picsum.photos/seed/sushirest/800/1000" alt="Sushi Demure" style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }} />
-            <div style={{ position:'absolute', inset:0, background:'rgba(14,28,20,0.35)' }}/>
+            <img src={ART_SECTION_IMAGE} alt={t.about.imageAlt} style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', position:'absolute', inset:0 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(14,28,20,0.5) 0%, rgba(14,28,20,0.12) 45%, rgba(14,28,20,0.2) 100%)' }}/>
             {/* Deco dots */}
             <div style={{ position: 'absolute', top: 24, right: 24, width: 60, height: 60, border: '1px solid rgba(240,184,200,0.2)', borderRadius: '50%' }}/>
             <div style={{ position: 'absolute', bottom: 24, left: 24, width: 40, height: 40, background: 'rgba(240,184,200,0.08)', borderRadius: '50%' }}/>
           </div>
           {/* Floating card */}
           <div style={{ position: 'absolute', bottom: -24, right: t.lang==='ar'?'auto':-24, left: t.lang==='ar'?-24:'auto', background: 'var(--dark-2)', borderRadius: 16, padding: '18px 24px', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--pink)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
-              {t.lang === 'ar' ? 'شعارنا' : 'Our Motto'}
+            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--pink)', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+              {t.about.mottoLabel}
             </div>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, color: 'var(--cream)', fontStyle: 'italic' }}>
-              {t.lang === 'ar' ? 'أنت تتذوق فناً' : 'You taste art.'}
+              {t.about.motto}
             </div>
           </div>
         </div>
@@ -233,8 +242,8 @@ function AISectionBlock({ t }) {
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(240,184,200,0.1)', border: '1px solid rgba(240,184,200,0.2)', borderRadius: 20, padding: '5px 14px', marginBottom: 24 }}>
               <span style={{ color: 'var(--pink)', fontSize: 13 }}>✦</span>
-              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--pink)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                {t.lang === 'ar' ? 'ذكاء اصطناعي' : 'AI Powered'}
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--pink)', letterSpacing: '0.12em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase' }}>
+                {t.aiSection.badge}
               </span>
             </div>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,3.5vw,3rem)', color: 'var(--cream)', margin: '0 0 20px', lineHeight: 1.2 }}>{t.aiSection.title}</h2>
@@ -252,7 +261,7 @@ function AISectionBlock({ t }) {
               { t1: t.aiSection.feat1Title, t2: t.aiSection.feat1Desc, icon: '📅' },
               { t1: t.aiSection.feat2Title, t2: t.aiSection.feat2Desc, icon: '💬' },
               { t1: t.aiSection.feat3Title, t2: t.aiSection.feat3Desc, icon: '🎙️' },
-              { t1: t.lang==='ar'?'متعدد اللغات':'Multilingual', t2: t.lang==='ar'?'عربي وإنجليزي — بسلاسة تامة':'Arabic & English — perfectly natural', icon: '🌐' },
+              { t1: t.aiSection.feat4Title, t2: t.aiSection.feat4Desc, icon: '🌐' },
             ].map((f, i) => (
               <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '1.25rem' }}>
                 <div style={{ fontSize: 22, marginBottom: 10 }}>{f.icon}</div>

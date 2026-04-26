@@ -21,10 +21,20 @@ function MenuSection({ t }) {
     })),
   ]), [t.menu.all, t.lang, catEn, catAr]);
 
-  const filtered = data.filter(item => {
+  const categoryLabelFor = (item) => {
+    const i = catEn.indexOf(item.category);
+    if (i >= 0 && t.lang === 'ar') return catAr[i] || item.category;
+    return item.category;
+  };
+
+  const filtered = data.filter((item) => {
     const catMatch = activeKey === ALL_CAT_KEY || item.category === activeKey;
     const name = t.lang === 'ar' ? item.nameAr : item.nameEn;
-    const searchMatch = !search || name.toLowerCase().includes(search.toLowerCase());
+    const desc = t.lang === 'ar' ? item.descAr : item.descEn;
+    const q = search.trim().toLowerCase();
+    const searchMatch = !q
+      || name.toLowerCase().includes(q)
+      || (desc && String(desc).toLowerCase().includes(q));
     return catMatch && searchMatch;
   });
 
@@ -60,8 +70,8 @@ function MenuSection({ t }) {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(1.5rem,5vw,4rem)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
-            {t.lang === 'ar' ? 'استكشف' : 'Explore'}
+          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
+            {t.menu.explore}
           </span>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,4vw,3.2rem)', color: 'var(--cream)', margin: '0 0 12px' }}>{t.menu.title}</h2>
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.5)', margin: 0 }}>{t.menu.sub}</p>
@@ -70,11 +80,11 @@ function MenuSection({ t }) {
         {/* Search */}
         <div style={{ maxWidth: 400, margin: '0 auto 32px', position: 'relative' }}>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder={t.lang === 'ar' ? 'ابحث في القائمة...' : 'Search menu...'}
-            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 32, padding: '12px 20px 12px 44px', fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--cream)', outline: 'none' }}
+            placeholder={t.menu.searchPlaceholder}
+            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 32, padding: t.lang === 'ar' ? '12px 44px 12px 20px' : '12px 20px 12px 44px', fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--cream)', outline: 'none' }}
             dir={t.dir}
           />
-          <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, fontSize: 16 }}>🔍</span>
+          <span style={{ position: 'absolute', [t.lang === 'ar' ? 'right' : 'left']: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, fontSize: 16 }}>🔍</span>
         </div>
 
         {/* Category tabs — scrollable */}
@@ -92,7 +102,7 @@ function MenuSection({ t }) {
         {/* Items grid */}
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 0', color: 'rgba(248,244,239,0.3)', fontFamily: 'DM Sans, sans-serif', fontSize: 16 }}>
-            {t.lang === 'ar' ? 'لا توجد نتائج' : 'No items found'}
+            {t.menu.empty}
           </div>
         ) : (
           <>
@@ -117,7 +127,7 @@ function MenuSection({ t }) {
                             e.currentTarget.src = 'img/logo.jpg';
                           }}
                         />
-                      : <div style={{ textAlign: 'center', opacity: 0.25 }}><div style={{ fontSize: 28, marginBottom: 4 }}>🍣</div><span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--cream)' }}>dish photo</span></div>
+                      : <div style={{ textAlign: 'center', opacity: 0.25 }}><div style={{ fontSize: 28, marginBottom: 4 }}>🍣</div><span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, color: 'var(--cream)' }}>{t.menu.dishPhoto}</span></div>
                     }
                     {tag && (
                       <span style={{ position: 'absolute', top: 10, right: t.lang==='ar'?'auto':10, left: t.lang==='ar'?10:'auto', background: tag.bg, color: tag.color, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
@@ -140,7 +150,7 @@ function MenuSection({ t }) {
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(248,244,239,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                        {item.category}
+                        {categoryLabelFor(item)}
                       </span>
                       <button style={{ background: 'rgba(240,184,200,0.12)', color: 'var(--pink)', border: '1px solid rgba(240,184,200,0.2)', padding: '5px 16px', borderRadius: 20, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.04em' }}
                         onMouseEnter={e => { e.target.style.background = 'var(--pink)'; e.target.style.color = 'var(--dark)'; }}
@@ -170,12 +180,10 @@ function MenuSection({ t }) {
                   cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                 }}
               >
-                {t.lang === 'ar' ? 'السابق' : 'Previous'}
+                {t.menu.prev}
               </button>
               <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.6)', letterSpacing: '0.04em' }}>
-                {t.lang === 'ar'
-                  ? `الصفحة ${currentPage} من ${totalPages}`
-                  : `Page ${currentPage} of ${totalPages}`}
+                {`${t.menu.page} ${currentPage} ${t.menu.of} ${totalPages}`}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
@@ -192,7 +200,7 @@ function MenuSection({ t }) {
                   cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                 }}
               >
-                {t.lang === 'ar' ? 'التالي' : 'Next'}
+                {t.menu.next}
               </button>
             </div>
           )}

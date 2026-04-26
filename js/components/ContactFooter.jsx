@@ -9,7 +9,7 @@ function ContactSection({ t }) {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
-            {t.lang === 'ar' ? 'تواصل' : 'Get in Touch'}
+            {t.contact.kicker}
           </span>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(2rem,4vw,3.2rem)', color: 'var(--cream)', margin: '0 0 12px' }}>{t.contact.title}</h2>
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.5)', margin: 0 }}>{t.contact.sub}</p>
@@ -20,7 +20,7 @@ function ContactSection({ t }) {
           {/* Contact card */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '2rem', display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, color: 'var(--cream)', marginBottom: 4 }}>
-              {t.lang === 'ar' ? 'معلومات التواصل' : 'Contact Info'}
+              {t.contact.infoCardTitle}
             </div>
 
             {/* Phone */}
@@ -29,7 +29,7 @@ function ContactSection({ t }) {
               onMouseLeave={e => e.currentTarget.querySelector('span.label').style.color = 'var(--cream)'}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(240,184,200,0.1)', border: '1px solid rgba(240,184,200,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📞</div>
               <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{t.lang === 'ar' ? 'الهاتف' : 'Phone'}</div>
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{t.contact.phoneLabel}</div>
                 <span className="label" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'var(--cream)', transition: 'color 0.2s' }}>{t.contact.phone}</span>
               </div>
             </a>
@@ -50,7 +50,7 @@ function ContactSection({ t }) {
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg,#f9a825,#e91e8c,#9c27b0)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📷</div>
               <div>
-                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Instagram</div>
+                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', textTransform: t.lang === 'ar' ? 'none' : 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{t.contact.instagramLabel}</div>
                 <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'var(--cream)' }}>{t.contact.instagram}</span>
               </div>
             </a>
@@ -74,7 +74,7 @@ function ContactSection({ t }) {
                   <div>
                     <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--cream)', fontWeight: 500 }}>{branch}</div>
                     <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.45)', marginTop: 3 }}>
-                      {t.lang === 'ar' ? 'مفتوح الآن' : 'Open Now'}
+                      {t.contact.openNow}
                     </div>
                   </div>
                 </div>
@@ -96,7 +96,7 @@ function ContactSection({ t }) {
             <div style={{ textAlign: 'center', zIndex: 1 }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
               <div style={{ fontFamily: 'monospace', fontSize: 13, color: 'rgba(248,244,239,0.3)' }}>{t.contact.mapPlaceholder}</div>
-              <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(248,244,239,0.2)', marginTop: 4 }}>embed Google Maps here</div>
+              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(248,244,239,0.2)', marginTop: 4 }}>{t.contact.mapEmbedHint}</div>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ function Footer({ t, lang, setLang }) {
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: 'var(--cream)', marginBottom: 6 }}>Sushi Demure</div>
             <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'var(--pink)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 14 }}>سوشي ديميور</div>
             <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.45)', lineHeight: 1.7, maxWidth: 240, marginBottom: 20 }}>
-              {t.lang === 'ar' ? 'أنت لا تتذوق طعاماً — أنت تتذوق فناً.' : 'You don\'t taste food — you taste art.'}
+              {t.footer.brandLine}
             </p>
             <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.3)', lineHeight: 1.6 }}>{t.footer.delivery}</div>
           </div>
@@ -155,11 +155,11 @@ function Footer({ t, lang, setLang }) {
             <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20 }}>{t.footer.social}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { icon: '📷', label: 'Instagram', href: 'https://instagram.com/sushi_demure' },
-                { icon: '🐦', label: 'X / Twitter', href: 'https://x.com/sushi_demure' },
-                { icon: '💬', label: 'WhatsApp', href: 'https://wa.me/966537854826' },
+                { icon: '📷', label: t.footer.socialInstagram, href: 'https://instagram.com/sushi_demure' },
+                { icon: '🐦', label: t.footer.socialX, href: 'https://x.com/sushi_demure' },
+                { icon: '💬', label: t.footer.socialWhatsApp, href: 'https://wa.me/966537854826' },
               ].map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
+                <a key={s.href} href={s.href} target="_blank" rel="noreferrer"
                   style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.55)', textDecoration: 'none', transition: 'color 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--cream)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(248,244,239,0.55)'}>

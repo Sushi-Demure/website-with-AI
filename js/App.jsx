@@ -30,7 +30,7 @@ function App() {
     } catch {
       // Fallback below.
     }
-    return 'en';
+    return 'ar';
   };
 
   const saved = localStorage.getItem('sd_lang');

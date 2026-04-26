@@ -5,12 +5,12 @@
 
 window.MENU_DATA = [
   // Our Signature
-  { id:1, category:'Our Signature', nameEn:'Sushi Demure Roll', nameAr:'رول سوشي ديميور', descEn:'Crab, cheese, mango, tempura flakes, dynamite sauce, ebiko', descAr:'كراب، جبن، مانجو، رقائق تمبورا، صلصة ديناميت، إيبيكو', price:52, tag:'popular', img:'https://unsplash.com/photos/5KS7T3Gs3CA/download?force=true&w=1200' },
-  { id:2, category:'Our Signature', nameEn:'Special Volcano', nameAr:'سبيشال فولكينو', descEn:'Crispy roll topped with our signature volcano sauce & ebiko', descAr:'رول مقرمش مع صلصة البركان المميزة وإيبيكو', price:48, tag:'popular', img:'https://unsplash.com/photos/egKJVNUGgDQ/download?force=true&w=1200' },
+  { id:1, category:'Our Signature', nameEn:'Sushi Demure', nameAr:'سوشي ديميور', descEn:'Special maki with choice of filling, Japanese mayo, and sriracha.', descAr:'ماكي مميّزة بحشوٍ اختياري ومايونيز ياباني وسيراتشا.', price:55, calories:50, tag:'popular', img:'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/5539d9d18d366867e1583f3b18046036.png?quality=75&webp=true&width=1440' },
+  { id:2, category:'Our Signature', nameEn:'Special Volcano', nameAr:'سبيشال فولكينو', descEn:'Shrimp, avocado, cucumber, bang bang sauce, and crunchy cornflakes.', descAr:'روبيان، أفوكادو، خيار، صلصة بانج بانج، وذرة رقائق مقرمشة.', price:30, calories:33, tag:'popular', img:'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/35afc2d1621505913d3465c3cf603d63.png?quality=75&webp=true&width=1440' },
   { id:3, category:'Our Signature', nameEn:'Shrimp Bomb', nameAr:'شريمب بومب', descEn:'Crispy shrimp, avocado, yum yum sauce, crunchy breadcrumbs', descAr:'روبيان مقرمش، أفوكادو، صلصة يم يم، فتات خبز مقرمش', price:45, tag:'new', img:'https://unsplash.com/photos/nfUUIpIfm9E/download?force=true&w=1200' },
 
   // Salmon Sushi
-  { id:4, category:'Salmon Sushi', nameEn:'Ocean Roll', nameAr:'أوشن رول', descEn:'Crispy shrimp tempura, eel sauce glaze', descAr:'روبيان تمبورا مقرمش مع صلصة ثعبان البحر', price:55, tag:'popular', img:'https://unsplash.com/photos/T_JP9lJBPaU/download?force=true&w=1200' },
+  { id:4, category:'Salmon Sushi', nameEn:'Ocean Roll', nameAr:'أوشن رول', descEn:'Crispy shrimp tempura with Japanese eel sauce; rich smoky taste.', descAr:'روبيان تمبورا مقرمش بصلصة الأنقليس اليابانية؛ نكهة غنية مائلة للدخان.', price:28, calories:61, tag:'popular', img:'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/777b800259064f521d6e81cceca1b432.jpg?quality=75&webp=true&width=1440' },
   { id:5, category:'Salmon Sushi', nameEn:'Salmon Avocado', nameAr:'سالمون أفوكادو', descEn:'Fresh salmon, avocado, cucumber, sesame', descAr:'سالمون طازج، أفوكادو، خيار، سمسم', price:42, tag:null, img:'https://unsplash.com/photos/dH9zt0QuQL0/download?force=true&w=1200' },
   { id:6, category:'Salmon Sushi', nameEn:'Super Crunchy', nameAr:'سوبر كرانشي', descEn:'Salmon, cream cheese, tempura crunch, spicy mayo', descAr:'سالمون، جبن كريمي، كرانشي تمبورا، مايو حار', price:49, tag:null, img:'https://unsplash.com/photos/5KS7T3Gs3CA/download?force=true&w=1200' },
 
@@ -44,7 +44,7 @@ window.MENU_DATA = [
   { id:19, category:'Boxes', nameEn:'Fun Box (12 pcs)', nameAr:'فن بوكس (12 قطعة)', descEn:'12 assorted rolls, selected to surprise you', descAr:'12 رول متنوع مختار ليفاجئك', price:75, tag:null, img:'https://unsplash.com/photos/7vN6VuTn9sg/download?force=true&w=1200' },
 
   // Sushi Cake
-  { id:20, category:'Sushi Cake', nameEn:'Signature Sushi Cake', nameAr:'كيكة سوشي توقيعنا', descEn:'Layered sushi cake, salmon, avocado, ebiko, cream cheese', descAr:'كيكة سوشي متعددة الطبقات، سالمون، أفوكادو، إيبيكو، جبن كريمي', price:189, tag:'new', img:'https://unsplash.com/photos/nfUUIpIfm9E/download?force=true&w=1200' },
+  { id:20, category:'Sushi Cake', nameEn:'Sushi Cake 3 Persons', nameAr:'كيكة السوشي (٣ أشخاص)', descEn:'Sushi cake signature item, first time in Riyadh.', descAr:'كيكة سوشي مميّزة، تُقدَّم لأول مرة في الرياض.', price:299, calories:1590, tag:'new', img:'https://images.deliveryhero.io/image/menu-import-gateway-prd/regions/ME/chains/HS-SUSHI/4a11cb3698ac3d65404c1e3f8b43ebd0.png?quality=75&webp=true&width=1440' },
 
   // Japanese Curry
   { id:21, category:'Japanese Curry', nameEn:'Chicken Katsu Curry', nameAr:'كاري كاتسو دجاج', descEn:'Panko-crusted chicken, Japanese golden curry, steamed rice', descAr:'دجاج مغطى بالبانكو، كاري ياباني ذهبي، أرز مطهو', price:55, tag:'popular', img:'https://unsplash.com/photos/_sfMD-OhFR8/download?force=true&w=1200' },

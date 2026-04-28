@@ -174,7 +174,7 @@ function ChatWidget({ t }) {
               {/* Quick actions for section */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 {t.chat.quickActions.map((a, i) => (
-                  <button key={i} onClick={() => { setOpen(true); setTimeout(() => send(a), 100); }}
+                  <button key={i} onClick={() => { setOpen(false); send(a); }}
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(248,244,239,0.75)', padding: '8px 18px', borderRadius: 24, fontFamily: 'DM Sans, sans-serif', fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}
                     onMouseEnter={e => { e.target.style.borderColor = 'var(--pink)'; e.target.style.color = 'var(--pink)'; }}
                     onMouseLeave={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.color = 'rgba(248,244,239,0.75)'; }}>

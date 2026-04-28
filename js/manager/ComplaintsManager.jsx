@@ -22,22 +22,119 @@ const DEFAULT_PAGE_SIZE = 10;
 
 /** Session flag after successful manager login (tab-scoped). */
 const MANAGER_SESSION_KEY = 'sushi_demure_manager_auth';
+const MANAGER_LANG_KEY = 'sushi_demure_manager_lang';
+
+const MANAGER_I18N = {
+  en: {
+    manager: 'Manager',
+    loginIntro: 'Enter the access key to open the complaints dashboard.',
+    accessKey: 'Access key',
+    accessKeyNotSet: 'Access key is not set. Edit js/manager/auth.config.js on the server.',
+    accessKeyWrong: 'That access key is incorrect. Please try again.',
+    signIn: 'Sign in',
+    backToSite: 'Back to website',
+    signOut: 'Sign out',
+    mainSite: 'Main site',
+    operations: 'Operations',
+    title: 'Manager Complaints',
+    subtitle: 'Review submitted complaints and track customer issues.',
+    source: 'Source',
+    category: 'Category',
+    status: 'Status',
+    all: 'All',
+    website: 'Website',
+    slack: 'Slack',
+    voice: 'Voice',
+    general: 'General',
+    food: 'Food',
+    service: 'Service',
+    reservation: 'Reservation',
+    delivery: 'Delivery',
+    billing: 'Billing',
+    open: 'Open',
+    inProgress: 'In Progress',
+    resolved: 'Resolved',
+    searchLabel: 'Search (name, phone, text)',
+    searchPlaceholder: 'Filter loaded results...',
+    perPage: 'Per page',
+    loadedPrefix: 'Loaded',
+    records: 'records from the server',
+    record: 'record from the server',
+    matchesSuffix: 'after search',
+    loading: 'Loading complaints...',
+    loadError: 'Sorry, complaints could not be loaded right now.',
+    empty: 'No complaints found for the selected filters.',
+    submitted: 'Submitted',
+    showing: 'Showing',
+    of: 'of',
+    page: 'Page',
+    previous: 'Previous',
+    next: 'Next',
+  },
+  ar: {
+    manager: 'المدير',
+    loginIntro: 'أدخل رمز الوصول لفتح لوحة الشكاوى.',
+    accessKey: 'رمز الوصول',
+    accessKeyNotSet: 'رمز الوصول غير مضبوط. عدّل js/manager/auth.config.js على الخادم.',
+    accessKeyWrong: 'رمز الوصول غير صحيح. حاول مرة أخرى.',
+    signIn: 'تسجيل الدخول',
+    backToSite: 'العودة للموقع',
+    signOut: 'تسجيل الخروج',
+    mainSite: 'الرئيسية',
+    operations: 'العمليات',
+    title: 'الشكاوى',
+    subtitle: 'راجع الشكاوى المرسلة وتابع مشاكل العملاء.',
+    source: 'المصدر',
+    category: 'الفئة',
+    status: 'الحالة',
+    all: 'الكل',
+    website: 'الموقع',
+    slack: 'سلاك',
+    voice: 'المساعد الصوتي',
+    general: 'عام',
+    food: 'الطعام',
+    service: 'الخدمة',
+    reservation: 'الحجز',
+    delivery: 'التوصيل',
+    billing: 'الدفع والفاتورة',
+    open: 'مفتوحة',
+    inProgress: 'قيد المعالجة',
+    resolved: 'محلولة',
+    searchLabel: 'بحث (الاسم، الهاتف، النص)',
+    searchPlaceholder: 'فلترة النتائج المحمّلة...',
+    perPage: 'لكل صفحة',
+    loadedPrefix: 'تم تحميل',
+    records: 'سجلات من الخادم',
+    record: 'سجل من الخادم',
+    matchesSuffix: 'مطابقة بعد البحث',
+    loading: 'جاري تحميل الشكاوى...',
+    loadError: 'تعذّر تحميل الشكاوى حالياً.',
+    empty: 'لا توجد شكاوى تطابق الفلاتر المحددة.',
+    submitted: 'تاريخ الإرسال',
+    showing: 'عرض',
+    of: 'من',
+    page: 'الصفحة',
+    previous: 'السابق',
+    next: 'التالي',
+  },
+};
 
 function getManagerAccessKey() {
   return String(typeof window !== 'undefined' && window.MANAGER_ACCESS_KEY != null ? window.MANAGER_ACCESS_KEY : '').trim();
 }
 
-function ManagerLogin({ onSuccess }) {
+function ManagerLogin({ onSuccess, lang, setLang }) {
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
   const configured = getManagerAccessKey().length > 0;
+  const tt = MANAGER_I18N[lang] || MANAGER_I18N.en;
 
   const submit = (e) => {
     e.preventDefault();
     setError('');
     const key = getManagerAccessKey();
     if (!key) {
-      setError('Access key is not set. Edit js/manager/auth.config.js on the server.');
+      setError(tt.accessKeyNotSet);
       return;
     }
     if (password === key) {
@@ -45,7 +142,7 @@ function ManagerLogin({ onSuccess }) {
       onSuccess();
       return;
     }
-    setError('That access key is incorrect. Please try again.');
+    setError(tt.accessKeyWrong);
   };
 
   return (
@@ -58,6 +155,7 @@ function ManagerLogin({ onSuccess }) {
         justifyContent: 'center',
         padding: 'clamp(1.25rem,5vw,2.5rem)',
       }}
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
       <div
         style={{
@@ -75,17 +173,17 @@ function ManagerLogin({ onSuccess }) {
             Sushi Demure
           </div>
           <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--pink)', letterSpacing: '0.22em', textTransform: 'uppercase', marginTop: 10 }}>
-            Manager
+            {tt.manager}
           </div>
         </div>
 
         <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(248,244,239,0.55)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 24px' }}>
-          Enter the access key to open the complaints dashboard.
+          {tt.loginIntro}
         </p>
 
         <form onSubmit={submit} noValidate>
           <label htmlFor="mgr-access" style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 8, letterSpacing: '0.06em' }}>
-            Access key
+            {tt.accessKey}
           </label>
           <input
             id="mgr-access"
@@ -139,15 +237,33 @@ function ManagerLogin({ onSuccess }) {
               letterSpacing: '0.04em',
             }}
           >
-            Sign in
+            {tt.signIn}
           </button>
         </form>
 
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.35)', textAlign: 'center', marginTop: 22, lineHeight: 1.5 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 22 }}>
+          <button
+            type="button"
+            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'var(--pink)',
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            {lang === 'en' ? 'العربية' : 'English'}
+          </button>
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.35)', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
           <a href="index.html" style={{ color: 'rgba(248,244,239,0.55)', textDecoration: 'none', borderBottom: '1px solid rgba(242,184,198,0.35)' }}>
-            ← Back to website
+            {lang === 'ar' ? '→' : '←'} {tt.backToSite}
           </a>
-        </p>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -343,7 +459,7 @@ function Badge({ children, style }) {
   );
 }
 
-function ManagerComplaintsApp({ onLogout }) {
+function ManagerComplaintsApp({ onLogout, lang, setLang }) {
   const [source, setSource] = React.useState('all');
   const [category, setCategory] = React.useState('all');
   const [status, setStatus] = React.useState('all');
@@ -353,6 +469,7 @@ function ManagerComplaintsApp({ onLogout }) {
 
   const [rawRows, setRawRows] = React.useState([]);
   const [loadState, setLoadState] = React.useState('loading');
+  const tt = MANAGER_I18N[lang] || MANAGER_I18N.en;
 
   const inp = {
     background: 'rgba(255,255,255,0.06)',
@@ -458,14 +575,30 @@ function ManagerComplaintsApp({ onLogout }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--dark)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--dark)' }} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <header style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(14,28,20,0.92)', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px clamp(1rem,4vw,2rem)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, fontWeight: 700, color: 'var(--cream)' }}>Sushi Demure</div>
-            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--pink)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>Manager</div>
+            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'var(--pink)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 2 }}>{tt.manager}</div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+              style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 13,
+                color: 'var(--pink)',
+                background: 'transparent',
+                padding: '8px 16px',
+                borderRadius: 24,
+                border: '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer',
+              }}
+            >
+              {lang === 'en' ? 'العربية' : 'English'}
+            </button>
             {typeof onLogout === 'function' && (
               <button
                 type="button"
@@ -484,7 +617,7 @@ function ManagerComplaintsApp({ onLogout }) {
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pink)'; e.currentTarget.style.color = 'var(--cream)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,244,239,0.8)'; }}
               >
-                Sign out
+                {tt.signOut}
               </button>
             )}
             <a
@@ -502,7 +635,7 @@ function ManagerComplaintsApp({ onLogout }) {
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--pink)'; e.currentTarget.style.color = 'var(--cream)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,244,239,0.7)'; }}
             >
-              ← Main site
+              {lang === 'ar' ? '→' : '←'} {tt.mainSite}
             </a>
           </div>
         </div>
@@ -511,63 +644,63 @@ function ManagerComplaintsApp({ onLogout }) {
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(2rem,5vw,3.5rem) clamp(1rem,4vw,2rem)' }}>
         <div style={{ marginBottom: 32 }}>
           <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--pink)', display: 'block', marginBottom: 12 }}>
-            Operations
+            {tt.operations}
           </span>
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.85rem,4vw,2.75rem)', color: 'var(--cream)', margin: '0 0 12px', lineHeight: 1.15 }}>
-            Manager Complaints
+            {tt.title}
           </h1>
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.58)', maxWidth: 560, lineHeight: 1.65, margin: 0 }}>
-            Review submitted complaints and track customer issues.
+            {tt.subtitle}
           </p>
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 16, alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 160px', minWidth: 0 }}>
-            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>Source</label>
+            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>{tt.source}</label>
             <select value={source} onChange={(e) => setSource(e.target.value)} style={sel}>
-              <option value="website" style={{ background: '#162b1e' }}>Website</option>
-              <option value="slack" style={{ background: '#162b1e' }}>Slack</option>
-              <option value="voice" style={{ background: '#162b1e' }}>Voice</option>
-              <option value="all" style={{ background: '#162b1e' }}>All</option>
+              <option value="website" style={{ background: '#162b1e' }}>{tt.website}</option>
+              <option value="slack" style={{ background: '#162b1e' }}>{tt.slack}</option>
+              <option value="voice" style={{ background: '#162b1e' }}>{tt.voice}</option>
+              <option value="all" style={{ background: '#162b1e' }}>{tt.all}</option>
             </select>
           </div>
           <div style={{ flex: '1 1 160px', minWidth: 0 }}>
-            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>Category</label>
+            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>{tt.category}</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)} style={sel}>
-              <option value="all" style={{ background: '#162b1e' }}>All</option>
-              <option value="general" style={{ background: '#162b1e' }}>General</option>
-              <option value="food" style={{ background: '#162b1e' }}>Food</option>
-              <option value="service" style={{ background: '#162b1e' }}>Service</option>
-              <option value="reservation" style={{ background: '#162b1e' }}>Reservation</option>
-              <option value="delivery" style={{ background: '#162b1e' }}>Delivery</option>
-              <option value="billing" style={{ background: '#162b1e' }}>Billing</option>
+              <option value="all" style={{ background: '#162b1e' }}>{tt.all}</option>
+              <option value="general" style={{ background: '#162b1e' }}>{tt.general}</option>
+              <option value="food" style={{ background: '#162b1e' }}>{tt.food}</option>
+              <option value="service" style={{ background: '#162b1e' }}>{tt.service}</option>
+              <option value="reservation" style={{ background: '#162b1e' }}>{tt.reservation}</option>
+              <option value="delivery" style={{ background: '#162b1e' }}>{tt.delivery}</option>
+              <option value="billing" style={{ background: '#162b1e' }}>{tt.billing}</option>
             </select>
           </div>
           <div style={{ flex: '1 1 160px', minWidth: 0 }}>
-            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>Status</label>
+            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>{tt.status}</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)} style={sel}>
-              <option value="all" style={{ background: '#162b1e' }}>All</option>
-              <option value="open" style={{ background: '#162b1e' }}>Open</option>
-              <option value="in_progress" style={{ background: '#162b1e' }}>In Progress</option>
-              <option value="resolved" style={{ background: '#162b1e' }}>Resolved</option>
+              <option value="all" style={{ background: '#162b1e' }}>{tt.all}</option>
+              <option value="open" style={{ background: '#162b1e' }}>{tt.open}</option>
+              <option value="in_progress" style={{ background: '#162b1e' }}>{tt.inProgress}</option>
+              <option value="resolved" style={{ background: '#162b1e' }}>{tt.resolved}</option>
             </select>
           </div>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 20, marginBottom: 28 }}>
           <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>Search (name, phone, text)</label>
+            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>{tt.searchLabel}</label>
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filter loaded results…"
+              placeholder={tt.searchPlaceholder}
               style={{ ...inp, maxWidth: 'min(100%, 480px)' }}
               onFocus={(e) => { e.target.style.borderColor = 'var(--pink)'; }}
               onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; }}
             />
           </div>
           <div style={{ flex: '0 1 140px' }}>
-            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>Per page</label>
+            <label style={{ display: 'block', fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.5)', marginBottom: 6, letterSpacing: '0.04em' }}>{tt.perPage}</label>
             <select
               value={String(pageSize)}
               onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
@@ -582,15 +715,15 @@ function ManagerComplaintsApp({ onLogout }) {
 
         {loadState === 'ready' && rawRows.length > 0 && (
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.45)', margin: '-8px 0 20px' }}>
-            Loaded <strong style={{ color: 'rgba(248,244,239,0.75)', fontWeight: 600 }}>{rawRows.length}</strong> record{rawRows.length === 1 ? '' : 's'} from the server
-            {search.trim() ? ` · ${totalCount} match${totalCount === 1 ? '' : 'es'} after search` : ''}.
+            {tt.loadedPrefix} <strong style={{ color: 'rgba(248,244,239,0.75)', fontWeight: 600 }}>{rawRows.length}</strong> {rawRows.length === 1 ? tt.record : tt.records}
+            {search.trim() ? ` · ${totalCount} ${tt.matchesSuffix}` : ''}.
           </p>
         )}
 
         {loadState === 'loading' && (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
             <div style={{ width: 44, height: 44, border: '3px solid rgba(240,184,198,0.2)', borderTopColor: 'var(--pink)', borderRadius: '50%', animation: 'spin 0.9s linear infinite', margin: '0 auto 20px' }} />
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'rgba(248,244,239,0.55)' }}>Loading complaints...</p>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'rgba(248,244,239,0.55)' }}>{tt.loading}</p>
           </div>
         )}
 
@@ -606,7 +739,7 @@ function ManagerComplaintsApp({ onLogout }) {
             }}
           >
             <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'rgba(248,244,239,0.92)', margin: 0, lineHeight: 1.6 }}>
-              Sorry, complaints could not be loaded right now.
+              {tt.loadError}
             </p>
           </div>
         )}
@@ -622,7 +755,7 @@ function ManagerComplaintsApp({ onLogout }) {
             }}
           >
             <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'rgba(248,244,239,0.5)', margin: 0 }}>
-              No complaints found for the selected filters.
+              {tt.empty}
             </p>
           </div>
         )}
@@ -631,7 +764,7 @@ function ManagerComplaintsApp({ onLogout }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {paginatedRows.map((row, idx) => {
               const st = String(row.status || 'open').toLowerCase().replace(/\s+/g, '_');
-              const stLabel = st === 'in_progress' ? 'In progress' : st;
+              const stLabel = st === 'in_progress' ? tt.inProgress : st;
               const cat = String(row.category || '—');
               const src = String(row.source || '—');
               const globalIdx = (page - 1) * pageSize + idx;
@@ -663,7 +796,7 @@ function ManagerComplaintsApp({ onLogout }) {
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(248,244,239,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                      Submitted
+                      {tt.submitted}
                     </span>
                     <time dateTime={row.created_at || ''} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(248,244,239,0.65)' }}>
                       {formatDateTime(row.created_at)}
@@ -689,9 +822,9 @@ function ManagerComplaintsApp({ onLogout }) {
                 Showing <strong style={{ color: 'var(--cream)', fontWeight: 600 }}>{rangeStart}</strong>
                 {' – '}
                 <strong style={{ color: 'var(--cream)', fontWeight: 600 }}>{rangeEnd}</strong>
-                {' of '}
+                {' '}{tt.of}{' '}
                 <strong style={{ color: 'var(--cream)', fontWeight: 600 }}>{totalCount}</strong>
-                {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ''}
+                {totalPages > 1 ? ` · ${tt.page} ${page} ${tt.of} ${totalPages}` : ''}
               </span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
                 <button
@@ -705,7 +838,7 @@ function ManagerComplaintsApp({ onLogout }) {
                     cursor: page <= 1 ? 'default' : 'pointer',
                   }}
                 >
-                  Previous
+                  {tt.previous}
                 </button>
                 <button
                   type="button"
@@ -719,7 +852,7 @@ function ManagerComplaintsApp({ onLogout }) {
                     cursor: page >= totalPages ? 'default' : 'pointer',
                   }}
                 >
-                  Next
+                  {tt.next}
                 </button>
               </div>
             </div>
@@ -734,6 +867,21 @@ function ManagerRoot() {
   const [authed, setAuthed] = React.useState(
     () => sessionStorage.getItem(MANAGER_SESSION_KEY) === '1',
   );
+  const [lang, setLang] = React.useState(() => {
+    try {
+      return localStorage.getItem(MANAGER_LANG_KEY) || 'en';
+    } catch {
+      return 'en';
+    }
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(MANAGER_LANG_KEY, lang);
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [lang]);
 
   const onLogout = React.useCallback(() => {
     sessionStorage.removeItem(MANAGER_SESSION_KEY);
@@ -741,9 +889,9 @@ function ManagerRoot() {
   }, []);
 
   if (!authed) {
-    return <ManagerLogin onSuccess={() => setAuthed(true)} />;
+    return <ManagerLogin onSuccess={() => setAuthed(true)} lang={lang} setLang={setLang} />;
   }
-  return <ManagerComplaintsApp onLogout={onLogout} />;
+  return <ManagerComplaintsApp onLogout={onLogout} lang={lang} setLang={setLang} />;
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

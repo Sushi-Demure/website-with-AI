@@ -82,22 +82,16 @@ function ContactSection({ t }) {
             </div>
           </div>
 
-          {/* Map placeholder */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: 20, overflow: 'hidden', minHeight: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            {/* Fake map grid */}
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07 }} xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="mapgrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M40 0 L0 0 L0 40" fill="none" stroke="#f8f4ef" strokeWidth="0.8"/>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#mapgrid)"/>
-            </svg>
-            <div style={{ textAlign: 'center', zIndex: 1 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
-              <div style={{ fontFamily: 'monospace', fontSize: 13, color: 'rgba(248,244,239,0.3)' }}>{t.contact.mapPlaceholder}</div>
-              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(248,244,239,0.2)', marginTop: 4 }}>{t.contact.mapEmbedHint}</div>
-            </div>
+          {/* Embedded map */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, overflow: 'hidden', minHeight: 280, position: 'relative' }}>
+            <iframe
+              title="Sushi Demure location map"
+              src="https://www.google.com/maps?q=Abi%20Bakr%20As%20Siddiq%20Rd%2C%20Alyasmin%2C%20Riyadh%2013326%2C%20Saudi%20Arabia&output=embed"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              style={{ border: 0, width: '100%', height: '100%', minHeight: 280, display: 'block' }}
+              allowFullScreen
+            />
           </div>
         </div>
       </div>

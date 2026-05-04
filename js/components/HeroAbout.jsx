@@ -3,6 +3,7 @@
 // ============================================================
 
 function HeroSection({ t }) {
+  const { setOpen: setOrderOpen } = window.useOrderCart();
   const [heroIn, setHeroIn] = React.useState(false);
 
   React.useEffect(() => {
@@ -65,6 +66,15 @@ function HeroSection({ t }) {
               onMouseEnter={e => { e.target.style.transform='translateY(-3px)'; e.target.style.boxShadow='0 14px 48px rgba(242,184,198,0.4)'; }}
               onMouseLeave={e => { e.target.style.transform='none'; e.target.style.boxShadow='0 8px 40px rgba(242,184,198,0.3)'; }}>
               {t.hero.cta1}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOrderOpen(true); scrollTo('#menu'); }}
+              style={{ background:'rgba(242,184,198,0.12)', color:'var(--pink)', padding:'15px 36px', borderRadius:40, border:'1.5px solid rgba(242,184,198,0.35)', fontFamily:'DM Sans,sans-serif', fontSize:15, fontWeight:600, cursor:'pointer', letterSpacing:'0.04em', transition:'all 0.25s', backdropFilter:'blur(8px)' }}
+              onMouseEnter={e => { e.target.style.background='rgba(242,184,198,0.2)'; e.target.style.borderColor='var(--pink)'; }}
+              onMouseLeave={e => { e.target.style.background='rgba(242,184,198,0.12)'; e.target.style.borderColor='rgba(242,184,198,0.35)'; }}
+            >
+              {t.hero.orderNow}
             </button>
             <button onClick={() => scrollTo('#chat')}
               style={{ background:'rgba(242,184,198,0.08)', color:'var(--pink)', padding:'15px 36px', borderRadius:40, border:'1.5px solid rgba(242,184,198,0.35)', fontFamily:'DM Sans,sans-serif', fontSize:15, fontWeight:500, cursor:'pointer', letterSpacing:'0.04em', transition:'all 0.25s', backdropFilter:'blur(8px)' }}

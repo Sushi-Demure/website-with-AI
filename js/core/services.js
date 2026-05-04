@@ -239,4 +239,64 @@ async function submitComplaint(payload) {
   }
 }
 
-window.SushiServices = { submitReservation, sendChatMessage, submitComplaint };
+// ── Food order (website → your n8n / backend) ───────────────
+
+/** Replace with your production webhook when ready. */
+const ORDER_WEBHOOK_URL = 'https://n8n-zcwg.srv1592624.hstgr.cloud/webhook/bee532e0-a7db-4a0e-9f11-3e31f8fa81f9';
+
+/**
+ * Submit food order. Body matches site contract; phone must already be cleaned.
+ * @returns {{ ok: true, message?: string } | { ok: false, error: string }}
+ */
+async function submitOrder(payload) {
+  const url = typeof ORDER_WEBHOOK_URL === 'string' ? ORDER_WEBHOOK_URL.trim() : '';
+  if (!url || url === 'PASTE_ORDER_WEBHOOK_URL_HERE') {
+    return { ok: false, error: '__ORDER_WEBHOOK_UNSET__' };
+  }
+
+  const orderType = payload.order_type === 'delivery' ? 'delivery' : 'pickup';
+  const body = {
+    name: String(payload.name || '').trim(),
+    phone: String(payload.phone || '').trim(),
+    items: String(payload.items || '').trim(),
+    order_type: orderType,
+    address: orderType === 'delivery' ? String(payload.address || '').trim() : '',
+    notes: String(payload.notes || '').trim(),
+    source: 'website',
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    let data = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        /* non-JSON */
+      }
+    }
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || (text && text.trim()) || `HTTP ${res.status}`;
+      return { ok: false, error: String(msg).slice(0, 500) };
+    }
+    if (data && data.success === true) {
+      return {
+        ok: true,
+        message: typeof data.message === 'string' ? data.message : '',
+      };
+    }
+    const failMsg = (data && (data.message || data.error)) || 'Order could not be confirmed.';
+    return { ok: false, error: String(failMsg).slice(0, 500) };
+  } catch (err) {
+    console.error('Order error:', err);
+    const msg = err && err.message ? String(err.message) : 'Network error';
+    return { ok: false, error: msg };
+  }
+}
+
+window.SushiServices = { submitReservation, sendChatMessage, submitComplaint, submitOrder };

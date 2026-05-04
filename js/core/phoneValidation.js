@@ -37,5 +37,31 @@
     return isValidPhone(value);
   }
 
-  g.SushiPhoneValidation = { isValidPhone, isValidPhoneOptional, digitsOnly };
+  /** Strip spaces, dashes, brackets; keep optional leading +; digits only otherwise. */
+  function cleanPhoneForOrder(value) {
+    const raw = String(value || '');
+    const noSpace = raw.replace(/[\s\-\(\)\[\]]/g, '');
+    if (noSpace.startsWith('+')) {
+      const digits = noSpace.slice(1).replace(/\D/g, '');
+      return '+' + digits;
+    }
+    return noSpace.replace(/\D/g, '');
+  }
+
+  /** Order flow: 10–15 digits after cleaning; allows leading +. */
+  function isValidOrderPhone(value) {
+    const c = cleanPhoneForOrder(value);
+    if (!c) return false;
+    const digits = c.startsWith('+') ? c.slice(1) : c;
+    if (!/^\d+$/.test(digits)) return false;
+    return digits.length >= 10 && digits.length <= 15;
+  }
+
+  g.SushiPhoneValidation = {
+    isValidPhone,
+    isValidPhoneOptional,
+    digitsOnly,
+    cleanPhoneForOrder,
+    isValidOrderPhone,
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

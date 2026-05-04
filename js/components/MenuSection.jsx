@@ -3,6 +3,7 @@
 // ============================================================
 
 function MenuSection({ t }) {
+  const { addToCart, setOpen: setOrderOpen, cartCount } = window.useOrderCart();
   const data = window.MENU_DATA || [];
   const ALL_CAT_KEY = '__all__';
   const [activeKey, setActiveKey] = React.useState(ALL_CAT_KEY);
@@ -77,14 +78,59 @@ function MenuSection({ t }) {
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 16, color: 'rgba(248,244,239,0.5)', margin: 0 }}>{t.menu.sub}</p>
         </div>
 
-        {/* Search */}
-        <div style={{ maxWidth: 400, margin: '0 auto 32px', position: 'relative' }}>
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder={t.menu.searchPlaceholder}
-            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 32, padding: t.lang === 'ar' ? '12px 44px 12px 20px' : '12px 20px 12px 44px', fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--cream)', outline: 'none' }}
-            dir={t.dir}
-          />
-          <span style={{ position: 'absolute', [t.lang === 'ar' ? 'right' : 'left']: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, fontSize: 16 }}>🔍</span>
+        {/* Search + cart */}
+        <div style={{ maxWidth: 520, margin: '0 auto 32px', display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', flex: '1 1 220px', minWidth: 0, maxWidth: 400 }}>
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder={t.menu.searchPlaceholder}
+              style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 32, padding: t.lang === 'ar' ? '12px 44px 12px 20px' : '12px 20px 12px 44px', fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'var(--cream)', outline: 'none' }}
+              dir={t.dir}
+            />
+            <span style={{ position: 'absolute', [t.lang === 'ar' ? 'right' : 'left']: 16, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, fontSize: 16 }}>🔍</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOrderOpen(true)}
+            aria-label={t.order.ariaCart}
+            style={{
+              flex: '0 0 auto',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '0 20px',
+              minHeight: 46,
+              borderRadius: 32,
+              border: '1px solid rgba(240,184,198,0.25)',
+              background: 'rgba(240,184,198,0.1)',
+              color: 'var(--pink)',
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(240,184,198,0.18)'; e.currentTarget.style.borderColor = 'rgba(240,184,198,0.45)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(240,184,198,0.1)'; e.currentTarget.style.borderColor = 'rgba(240,184,198,0.25)'; }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }} aria-hidden>🛒</span>
+            <span>{t.order.cartBadge}</span>
+            {cartCount > 0 ? (
+              <span style={{
+                minWidth: 22,
+                height: 22,
+                padding: '0 6px',
+                borderRadius: 11,
+                background: 'var(--pink)',
+                color: 'var(--dark)',
+                fontSize: 12,
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>{cartCount > 99 ? '99+' : cartCount}</span>
+            ) : null}
+          </button>
         </div>
 
         {/* Category tabs — scrollable */}
@@ -152,9 +198,13 @@ function MenuSection({ t }) {
                       <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(248,244,239,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                         {categoryLabelFor(item)}
                       </span>
-                      <button style={{ background: 'rgba(240,184,200,0.12)', color: 'var(--pink)', border: '1px solid rgba(240,184,200,0.2)', padding: '5px 16px', borderRadius: 20, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.04em' }}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); addToCart(item); }}
+                        style={{ background: 'rgba(240,184,200,0.12)', color: 'var(--pink)', border: '1px solid rgba(240,184,200,0.2)', padding: '5px 16px', borderRadius: 20, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.04em' }}
                         onMouseEnter={e => { e.target.style.background = 'var(--pink)'; e.target.style.color = 'var(--dark)'; }}
-                        onMouseLeave={e => { e.target.style.background = 'rgba(240,184,200,0.12)'; e.target.style.color = 'var(--pink)'; }}>
+                        onMouseLeave={e => { e.target.style.background = 'rgba(240,184,200,0.12)'; e.target.style.color = 'var(--pink)'; }}
+                      >
                         {t.menu.addToCart}
                       </button>
                     </div>

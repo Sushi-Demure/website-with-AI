@@ -76,22 +76,27 @@ function App() {
     document.documentElement.lang = t.lang;
   }, [lang]);
 
+  const CartProvider = window.OrderCartProvider;
+  const CartPanel = window.OrderCartPanel;
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--dark)' }} dir={t.dir}>
-      <Navbar t={t} lang={lang} setLang={setLang} />
-      <HeroSection t={t} />
-      <FeaturedSection t={t} />
-      <AboutSection t={t} />
-      <WhyUsSection t={t} />
-      <AISectionBlock t={t} />
-      <MenuSection t={t} />
-      <ReservationSection t={t} />
-      <ChatWidget t={t} />
-      <VoiceSection t={t} />
-      <ComplaintSection t={t} />
-      <ContactSection t={t} />
-      <Footer t={t} lang={lang} setLang={setLang} />
-    </div>
+    <CartProvider>
+      <div style={{ minHeight: '100vh', background: 'var(--dark)' }} dir={t.dir}>
+        <Navbar t={t} lang={lang} setLang={setLang} />
+        <HeroSection t={t} />
+        <FeaturedSection t={t} />
+        <AboutSection t={t} />
+        <WhyUsSection t={t} />
+        <AISectionBlock t={t} />
+        <MenuSection t={t} />
+        <ReservationSection t={t} />
+        <ChatWidget t={t} />
+        <VoiceSection t={t} />
+        <ComplaintSection t={t} />
+        <ContactSection t={t} />
+        <Footer t={t} lang={lang} setLang={setLang} />
+        <CartPanel t={t} />
+      </div>
+    </CartProvider>
   );
 }
 

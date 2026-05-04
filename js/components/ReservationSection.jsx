@@ -3,6 +3,47 @@
 // ============================================================
 
 function ReservationSection({ t }) {
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const getLocalDateIso = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  };
+  const getLocalTimeHm = () => {
+    const d = new Date();
+    return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  };
+  const parseTimeToMinutes = (value) => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const m24 = raw.match(/^(\d{1,2}):(\d{2})$/);
+    if (m24) {
+      const hh = Number(m24[1]);
+      const mm = Number(m24[2]);
+      if (Number.isFinite(hh) && Number.isFinite(mm) && hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
+        return (hh * 60) + mm;
+      }
+    }
+    const m12 = raw.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+    if (m12) {
+      let hh = Number(m12[1]) % 12;
+      const mm = Number(m12[2]);
+      const ap = String(m12[3]).toUpperCase();
+      if (ap === 'PM') hh += 12;
+      if (Number.isFinite(hh) && Number.isFinite(mm) && hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59) {
+        return (hh * 60) + mm;
+      }
+    }
+    return null;
+  };
+  const isPastTimeForToday = (dateValue, timeValue) => {
+    if (!dateValue || !timeValue) return false;
+    if (dateValue !== getLocalDateIso()) return false;
+    const selectedMin = parseTimeToMinutes(timeValue);
+    const nowMin = parseTimeToMinutes(getLocalTimeHm());
+    if (selectedMin === null || nowMin === null) return false;
+    return selectedMin < nowMin;
+  };
+
   const [form, setForm] = React.useState({
     name: '', phone: '', date: '', time: '', guests: '',
     request: '', language: '', seating: '', occasion: '',
@@ -13,6 +54,8 @@ function ReservationSection({ t }) {
   const [result, setResult] = React.useState(null);
   const f = t.reservation.form;
   const review = t.reservation.review;
+  const todayIso = getLocalDateIso();
+  const minTimeForSelectedDate = form.date === todayIso ? getLocalTimeHm() : undefined;
 
   const isAutoTableIntent = (s) => {
     const x = String(s || '').trim();
@@ -75,12 +118,16 @@ function ReservationSection({ t }) {
   const v = t.reservation.validate;
   const validate = () => {
     const e = {};
+    const datePastMsg = t.lang === 'ar' ? 'لا يمكن اختيار تاريخ سابق.' : 'Past date is not allowed.';
+    const timePastMsg = t.lang === 'ar' ? 'لا يمكن اختيار وقت سابق لليوم.' : 'Past time is not allowed for today.';
     const phoneTrim = String(form.phone || '').trim();
     if (!phoneTrim) e.phone = v.phone;
     else if (window.SushiPhoneValidation && !window.SushiPhoneValidation.isValidPhone(form.phone)) e.phone = v.phoneInvalid;
     if (!form.name.trim()) e.name = v.name;
     if (!form.date) e.date = v.date;
+    else if (form.date < todayIso) e.date = datePastMsg;
     if (!form.time) e.time = v.time;
+    else if (isPastTimeForToday(form.date, form.time)) e.time = timePastMsg;
     if (!form.guests && form.guests !== 0) e.guests = v.guests;
     else {
       const n = parseInt(String(form.guests).trim(), 10);
@@ -123,7 +170,25 @@ function ReservationSection({ t }) {
   const inp = (key, type='text', ph='', inputExtra = {}) => (
     <div style={{ display:'flex', flexDirection:'column', gap: 6 }}>
       <label style={{ fontFamily:'DM Sans,sans-serif', fontSize:13, color:'rgba(248,244,239,0.6)', letterSpacing:'0.04em' }}>{f[key]}</label>
-      <input type={type} value={form[key]} onChange={e => setForm(p=>({...p,[key]:e.target.value}))}
+      <input type={type} value={form[key]} onChange={e => {
+        const nextValue = e.target.value;
+        setForm((p) => {
+          if (key === 'date') {
+            const next = { ...p, [key]: nextValue };
+            if (nextValue === getLocalDateIso() && isPastTimeForToday(nextValue, next.time)) {
+              next.time = getLocalTimeHm();
+            }
+            return next;
+          }
+          if (key === 'time' && isPastTimeForToday(p.date, nextValue)) {
+            const corrected = getLocalTimeHm();
+            // Ensure the visible native input value is corrected immediately.
+            e.target.value = corrected;
+            return { ...p, [key]: corrected };
+          }
+          return { ...p, [key]: nextValue };
+        });
+      }}
         placeholder={f[key+'Ph'] || ph} dir={t.dir}
         min={inputExtra.min}
         max={inputExtra.max}
@@ -186,7 +251,7 @@ function ReservationSection({ t }) {
                   {inp('name','text')} {inp('phone','tel')}
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                  {inp('date','date')} {inp('time','time')}
+                  {inp('date','date', '', { min: todayIso })} {inp('time','time', '', { min: minTimeForSelectedDate })}
                 </div>
                 {inp('guests','number', '', { min: 1, max: 50 })}
                 <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:12, color:'rgba(248,244,239,0.45)', margin:0, letterSpacing:'0.06em', textTransform:'uppercase' }}>{f.optionalSection}</p>

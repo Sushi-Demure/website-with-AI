@@ -52,7 +52,7 @@ function HeroSection({ t }) {
           {/* Headline */}
           <h1 style={{ fontFamily:'Playfair Display,serif', fontSize:'clamp(3.2rem,7.5vw,6.5rem)', fontWeight:700, color:'var(--cream)', lineHeight:1.05, margin:'0 0 28px', textWrap:'pretty' }}>
             <span style={{ display:'block', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(26px)', transition:'all 860ms cubic-bezier(0.22,1,0.36,1) 80ms' }}>{t.hero.tagline}</span>
-            <span style={{ display:'block', color:'var(--pink)', fontStyle:'italic', opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(26px)', transition:'all 860ms cubic-bezier(0.22,1,0.36,1) 180ms' }}>{t.hero.tagline2}</span>
+            <span style={{ display:'block', color:'var(--pink)', fontStyle: t.lang === 'ar' ? 'normal' : 'italic', fontFamily: t.lang === 'ar' ? "'Noto Sans Arabic', sans-serif" : undefined, opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(26px)', transition:'all 860ms cubic-bezier(0.22,1,0.36,1) 180ms' }}>{t.hero.tagline2}</span>
           </h1>
 
           <p style={{ fontFamily:'DM Sans,sans-serif', fontSize:'clamp(1rem,1.8vw,1.2rem)', color:'rgba(248,242,234,0.65)', maxWidth:540, lineHeight:1.8, marginBottom:52, opacity: heroIn ? 1 : 0, transform: heroIn ? 'none' : 'translateY(22px)', transition:'all 760ms cubic-bezier(0.22,1,0.36,1) 260ms' }}>

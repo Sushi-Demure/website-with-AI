@@ -288,26 +288,34 @@ function ChatWidget({ t }) {
 
 // ── Voice AI Section (Retell AI) ──────────────────────────────
 // Agent + public key: documented in /INTEGRATION.md
+// Uses RetellClient + POST /v3/create-web-call (via SDK). Public key must allow this site's domain.
 const RETELL_AGENT_ID  = 'agent_714b199204c6cc01cd77ebc37d';
 const RETELL_PUBLIC_KEY = 'public_key_3c5ba26e49b46112b6dbb';
 
 function VoiceSection({ t }) {
   const [voiceState, setVoiceState] = React.useState('idle');
   const [voiceNote, setVoiceNote] = React.useState('');
-  const retellRef = React.useRef(null);
+  const callRef = React.useRef(null);
   const isStartingRef = React.useRef(false);
   const sdkReadyRef = React.useRef(null);
 
+  const voiceNoteFromError = React.useCallback((err) => {
+    const msg = String(err && err.message ? err.message : err || '');
+    if (/denied|NotAllowedError|Permission/i.test(msg)) return t.voice.errMicDenied;
+    if (/Microphone API unavailable|secure context|insecure|getUserMedia/i.test(msg)) return t.voice.errMicInsecure;
+    if (/public key is not allowed for this domain/i.test(msg)) return t.voice.errRetellDomain;
+    if (/Retell SDK|load|unavailable/i.test(msg)) return t.voice.errLoadVoice;
+    return t.voice.errStartSession;
+  }, [t]);
+
   const teardownCall = React.useCallback((nextState = 'ended', note = '') => {
-    try {
-      if (retellRef.current) retellRef.current.stopCall();
-    } catch (e) {
-      console.warn('Retell stopCall warning:', e);
-    } finally {
-      retellRef.current = null;
-      isStartingRef.current = false;
-      setVoiceState(nextState);
-      setVoiceNote(note);
+    const call = callRef.current;
+    callRef.current = null;
+    isStartingRef.current = false;
+    setVoiceState(nextState);
+    setVoiceNote(note);
+    if (call && typeof call.end === 'function') {
+      Promise.resolve(call.end()).catch((e) => console.warn('Retell end warning:', e));
     }
   }, []);
 
@@ -320,13 +328,13 @@ function VoiceSection({ t }) {
   }, []);
 
   const ensureRetellSdk = React.useCallback(async () => {
-    if (window.RetellWebClient) return window.RetellWebClient;
+    if (window.RetellClient) return window.RetellClient;
     if (!sdkReadyRef.current) {
       sdkReadyRef.current = new Promise((resolve, reject) => {
-        // index.html loads RetellWebClient as a module and assigns window.RetellWebClient.
+        // index.html loads RetellClient as a module and assigns window.RetellClient.
         let tries = 0;
         const check = () => {
-          if (window.RetellWebClient) return resolve(true);
+          if (window.RetellClient) return resolve(true);
           tries += 1;
           if (tries > 40) return reject(new Error('Failed to load Retell SDK'));
           setTimeout(check, 100);
@@ -341,10 +349,10 @@ function VoiceSection({ t }) {
       sdkReadyRef.current = null;
       throw e;
     }
-    if (!window.RetellWebClient) {
+    if (!window.RetellClient) {
       throw new Error('Retell SDK unavailable');
     }
-    return window.RetellWebClient;
+    return window.RetellClient;
   }, []);
 
   // Load Retell SDK once
@@ -355,73 +363,53 @@ function VoiceSection({ t }) {
 
   const startCall = async () => {
     if (isStartingRef.current || voiceState === 'connecting') return;
-    if (retellRef.current) return;
+    if (callRef.current) return;
     try {
       isStartingRef.current = true;
       setVoiceNote('');
       setVoiceState('connecting');
-      const RetellWebClientCtor = await ensureRetellSdk();
-
-      // Get access token from Retell
-      const resp = await fetch('https://api.retellai.com/v2/create-web-call', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RETELL_PUBLIC_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ agent_id: RETELL_AGENT_ID }),
-      });
-      const data = await resp.json().catch(() => null);
-      if (!resp.ok) {
-        const apiMsg = data && typeof data.message === 'string' ? data.message : '';
-        throw new Error(apiMsg ? `Retell token request failed (${resp.status}): ${apiMsg}` : `Retell token request failed (${resp.status})`);
-      }
-      const accessToken = data && (data.access_token || data.accessToken);
-      if (!accessToken) throw new Error('Missing Retell access token');
+      const RetellClientCtor = await ensureRetellSdk();
       await ensureMicPermission();
 
-      const client = new RetellWebClientCtor();
-      retellRef.current = client;
-      client.on('call_started',  () => { setVoiceState('active'); setVoiceNote(''); });
-      client.on('agent_start_talking', () => { setVoiceState('active'); setVoiceNote(''); });
-      client.on('agent_stop_talking',  () => { setVoiceState('listening'); setVoiceNote(''); });
-      client.on('call_ended',    () => {
-        retellRef.current = null;
-        isStartingRef.current = false;
-        setVoiceState('ended');
-        setVoiceNote('');
+      const client = new RetellClientCtor({ key: RETELL_PUBLIC_KEY });
+      const call = client.createWebCall({
+        agent_id: RETELL_AGENT_ID,
+        audio: { sampleRate: 24000 },
+        hooks: {
+          onStatus: (status) => {
+            if (status === 'live') {
+              isStartingRef.current = false;
+              setVoiceState('listening');
+              setVoiceNote('');
+            } else if (status === 'ended') {
+              callRef.current = null;
+              isStartingRef.current = false;
+              setVoiceState('ended');
+              // Keep any error note set by onError (e.g. domain allowlist).
+            }
+          },
+          onEnd: () => {
+            callRef.current = null;
+            isStartingRef.current = false;
+            setVoiceState('ended');
+            // Do not clear voiceNote — onError may have already set the reason.
+          },
+          onError: (error) => {
+            console.error('Retell runtime error:', error);
+            callRef.current = null;
+            isStartingRef.current = false;
+            setVoiceState('ended');
+            setVoiceNote(voiceNoteFromError(error) || t.voice.errDisconnected);
+          },
+        },
       });
-      client.on('error',         (e) => {
-        console.error('Retell runtime error:', e);
-        retellRef.current = null;
-        isStartingRef.current = false;
-        setVoiceState('ended');
-        setVoiceNote(t.voice.errDisconnected);
-      });
-      await client.startCall({ accessToken, sampleRate: 24000 });
-      isStartingRef.current = false;
-      setVoiceState('listening');
+      callRef.current = call;
     } catch (err) {
       console.error('Retell start error:', err);
-      const msg = String(err && err.message ? err.message : '');
-      const micDenied = /denied|NotAllowedError|Permission/i.test(msg);
-      const micUnavailable = /Microphone API unavailable|secure context|insecure|getUserMedia/i.test(msg);
-      const sdkIssue = /Retell SDK|load/i.test(msg);
-      const domainNotAllowed = /public key is not allowed for this domain/i.test(msg);
+      callRef.current = null;
       isStartingRef.current = false;
-      retellRef.current = null;
       setVoiceState('ended');
-      setVoiceNote(
-        micDenied
-          ? t.voice.errMicDenied
-          : micUnavailable
-            ? t.voice.errMicInsecure
-            : domainNotAllowed
-              ? t.voice.errRetellDomain
-            : sdkIssue
-              ? t.voice.errLoadVoice
-          : t.voice.errStartSession
-      );
+      setVoiceNote(voiceNoteFromError(err));
     }
   };
 
@@ -486,8 +474,8 @@ function VoiceSection({ t }) {
 
             {/* ── RETELL AI — Live Integration ──
                 Agent ID: agent_714b199204c6cc01cd77ebc37d
-                SDK: retell-client-js-sdk (loaded dynamically)
-                startCall() calls /v2/create-web-call then RetellWebClient.startCall()
+                SDK: retell-client-js-sdk@3 (RetellClient.createWebCall → /v3/create-web-call)
+                Public key domain allowlist must include this site's host.
             ────────────────────────────────── */}
             <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(240,184,200,0.15)', borderRadius: 14, padding: '14px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: voiceState === 'active' || voiceState === 'listening' ? '#7dcea0' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }}/>

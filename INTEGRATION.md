@@ -93,7 +93,8 @@ Posted by `submitComplaint` in `js/core/services.js` to the complaints webhook o
 
 ## Retell (voice)
 
-- Browser calls `POST https://api.retellai.com/v2/create-web-call` with `Authorization: Bearer <public_key>` and body `{ "agent_id": "<id>" }`.
+- Frontend uses **`retell-client-js-sdk@3`** (`RetellClient.createWebCall`), which calls `POST /v3/create-web-call` with the public key.
+- **Domain allowlist (required):** In Retell Dashboard → **API Keys → Public Keys**, edit `public_key_…` and add every host that serves the site (e.g. your GitHub Pages domain, custom domain, and `localhost` for local testing). A `401` with `Public key is not allowed for this domain` means the current browser origin is missing from that list — not a broken agent.
 - **Security note:** Public key in frontend is normal for Retell web; still rotate if leaked and monitor usage.
 
 ---
